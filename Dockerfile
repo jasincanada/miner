@@ -9,17 +9,17 @@
 #   WORKER         (default: desktop3070ti)
 #   POOL           (default: pearlpow.unmineable.com:4444)
 #   USE_TLS        (default: true)
-# GPU intensity is automatic; requested fan is 100% and power limit is 290 W
-# (verify effective settings on the host).
+# GPU intensity is automatic. Fan/power flags are opt-in (GPU_FAN,
+# GPU_POWER_LIMIT) because Docker Desktop/WSL2 blocks those NVML writes.
 #
 # Run with Nvidia Container Toolkit, for example:
 #   docker run --rm --gpus all \
 #     -e PAYOUT_WALLET=YOUR_SOL_ADDRESS -e WORKER=desktop3070ti \
 #     <image>
 #
-# SRBMiner-MULTI 3.8.1, MD5 as published by the miner author.
-ARG SRBMINER_VERSION=3.8.1
-ARG SRBMINER_MD5=f7d94347dfae5e629225a3c14bc12794
+# SRBMiner-MULTI 3.8.3, MD5 as published by the miner author.
+ARG SRBMINER_VERSION=3.8.3
+ARG SRBMINER_MD5=2b440b62923ec6930c56f352495c28e9
 
 FROM nvidia/cuda:12.4.1-runtime-ubuntu22.04
 

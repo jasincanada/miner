@@ -9,11 +9,11 @@ so that is a snapshot, not a guarantee.
 ## What is in this image
 
 - Nvidia CUDA 12.4.1 runtime, Ubuntu 22.04
-- SRBMiner-MULTI 3.8.1, PearlHash, MD5-verified at build time
+- SRBMiner-MULTI 3.8.3, PearlHash, MD5-verified at build time
 - `start.sh`, which refuses to start if `PAYOUT_WALLET` is empty (the image
   defaults it to the baked-in address and `WORKER` to `desktop3070ti`)
-- Automatic GPU intensity (no fixed `--gpu-intensity`), requested 100% fan
-  (`--gpu-fan0 100`) and 290 W power cap (`--gpu-plimit0 290`)
+- Automatic GPU intensity (no fixed `--gpu-intensity`). Fan and power flags
+  are opt-in (`GPU_FAN`, `GPU_POWER_LIMIT`); see below
 - TLS by default to `pearlpow.unmineable.com:4444`, with login
   `SOL:<Solana-address>.<worker>`
 - A supervising shell that waits for the miner and forwards TERM/INT,
@@ -80,9 +80,13 @@ with `docker rm pearl-miner` before reusing that container name.
 
 ## Verify on Docker Desktop before unattended mining
 
-The flags request hardware settings; they do not prove the driver applies
-them. Docker Desktop/WSL2 may not expose fan or power management even when
-`--gpus all` enables mining. This repository update has **not** been
+**Fan and power cannot be set from inside the container on Docker
+Desktop/WSL2.** Host testing showed SRBMiner's NVML writes fail with
+`Insufficient Permissions (4)` (`PL0`/`FS0` FAILED), so `--gpu-fan0` and
+`--gpu-plimit0` are no longer passed by default. Set them from the Windows
+host instead: run `nvidia-smi -pl 290` in an Administrator PowerShell (resets
+on reboot) and use MSI Afterburner or your board's utility for fan. To still
+ask the miner to try, pass `-e GPU_FAN=100 -e GPU_POWER_LIMIT=290`. This repository update has **not** been
 validated on the target RTX 3070 Ti: no target GPU telemetry, pool jobs,
 or accepted shares were available in the development environment.
 
@@ -90,7 +94,7 @@ Build this source with `docker build -t miner:3.8.3 .` if the updated
 image is not yet available from the registry. Already-downloaded images
 do not change until rebuilt or updated from the registry.
 
-1. Use `docker logs -f pearl-miner` to check SRBMiner 3.8.1 detects the
+1. Use `docker logs -f pearl-miner` to check SRBMiner 3.8.3 detects the
    RTX 3070 Ti, tunes intensity without a fixed override, connects via TLS
    to `pearlpow.unmineable.com:4444` with `SOL:<address>.<worker>`, receives
    pool jobs, and reports accepted (not merely submitted) shares. The
@@ -108,8 +112,7 @@ do not change until rebuilt or updated from the registry.
    confirm a manual **100% fan target**, and host sensor telemetry to
    confirm fan speed/RPM responds accordingly. A logged command or
    an `N/A` sensor value is not confirmation.
-3. If the container controls are ignored, stop mining and apply a manual
-   100% fan target and 290 W cap using the host GPU control utility.
+3. Apply a manual 100% fan target and 290 W cap on the host as above.
    On native Linux, `sudo nvidia-smi -i 0 -pl 290` can set the power cap
    for GPU 0; fan control needs a supported host utility/driver setup.
    Do not add `--privileged` or install a Linux NVIDIA driver in WSL
@@ -168,11 +171,9 @@ tag if you need reproducibility.
 
 The source tag alone does not confirm that an image was published. Check
 the registry before describing or using `3.8.3` as an available image.
-The image contains SRBMiner-MULTI 3.8.1; that is the miner binary version,
-not the container image tag. Before the next image release, resolve the
-verified pool-default and GPU-requirement issues and complete the GPU,
-supervised-startup, TLS/SOL-login, automatic-intensity, fan-target, and
-290 W-cap smoke tests.
+The image contains SRBMiner-MULTI 3.8.3; that is the miner binary version,
+not the container image tag. The container release number (for example
+`v3.8.4`) is separate and increases with every image change.
 
 ## Fees, in plain terms
 
