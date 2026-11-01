@@ -9,7 +9,7 @@ so that is a snapshot, not a guarantee.
 ## What is in this image
 
 - Nvidia CUDA 12.4.1 runtime, Ubuntu 22.04
-- SRBMiner-MULTI 3.8.1, PearlHash, MD5-verified at build time
+- SRBMiner-MULTI 3.8.3, PearlHash, MD5-verified at build time
 - `start.sh`, which refuses to start if `PAYOUT_WALLET` is empty (the image
   defaults it to the baked-in address and `WORKER` to `desktop3070ti`)
 - Automatic GPU intensity (no fixed `--gpu-intensity`). Fan and power flags
@@ -94,7 +94,7 @@ Build this source with `docker build -t miner:3.8.3 .` if the updated
 image is not yet available from the registry. Already-downloaded images
 do not change until rebuilt or updated from the registry.
 
-1. Use `docker logs -f pearl-miner` to check SRBMiner 3.8.1 detects the
+1. Use `docker logs -f pearl-miner` to check SRBMiner 3.8.3 detects the
    RTX 3070 Ti, tunes intensity without a fixed override, connects via TLS
    to `pearlpow.unmineable.com:4444` with `SOL:<address>.<worker>`, receives
    pool jobs, and reports accepted (not merely submitted) shares. The
@@ -171,11 +171,9 @@ tag if you need reproducibility.
 
 The source tag alone does not confirm that an image was published. Check
 the registry before describing or using `3.8.3` as an available image.
-The image contains SRBMiner-MULTI 3.8.1; that is the miner binary version,
-not the container image tag. Before the next image release, resolve the
-verified pool-default and GPU-requirement issues and complete the GPU,
-supervised-startup, TLS/SOL-login, automatic-intensity, fan-target, and
-290 W-cap smoke tests.
+The image contains SRBMiner-MULTI 3.8.3; that is the miner binary version,
+not the container image tag. The container release number (for example
+`v3.8.4`) is separate and increases with every image change.
 
 ## Fees, in plain terms
 
