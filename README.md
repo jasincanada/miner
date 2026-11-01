@@ -53,10 +53,17 @@ docker run --rm --gpus all \
   <image>
 ```
 
+The default connection uses `pearlpow.unmineable.com:4444` with
+`--tls true`. The login is `SOL:<solana-address>.<worker>`; supply
+`PAYOUT_WALLET` as the address only, without the `SOL:` prefix.
+
 Optional:
 
-- `POOL` — default `pearlpow.unmineable.com:3333` (TCP)
-- `USE_TLS=true` — switches to the SSL pool port automatically
+- `POOL` — default `pearlpow.unmineable.com:4444` (TLS)
+- `USE_TLS` — default `true`; adds `--tls true` and switches the
+  unMineable TCP endpoint to port 4444 automatically
+- To use TCP instead, set both `POOL=pearlpow.unmineable.com:3333`
+  and `USE_TLS=false`
 
 Check the miner log for accepted shares, and check unMineable stats
 by your wallet address for the pool-side hashrate.
