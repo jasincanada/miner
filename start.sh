@@ -63,6 +63,17 @@ echo "Wallet: ${PAYOUT_WALLET}.${WORKER}"
 echo "TLS:    $USE_TLS"
 echo "Command template: SRBMiner-MULTI --disable-cpu --algorithm pearlhash --pool <pool> --wallet <sol-address>.<worker>[ --tls true ]"
 
-# exec so the miner replaces this script: the container lives and dies
-# with the miner, and a failure surfaces as a real exit code.
-exec "$@"
+# Keep the shell alive to supervise the miner in detached Docker runs.
+"$@" &
+miner_pid=$!
+
+stop_miner() {
+    trap '' TERM INT
+    kill "-$1" "$miner_pid" 2>/dev/null || true
+    wait "$miner_pid"
+    exit $?
+}
+
+trap 'stop_miner TERM' TERM
+trap 'stop_miner INT' INT
+wait "$miner_pid"
