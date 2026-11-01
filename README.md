@@ -78,6 +78,75 @@ Supply only the Solana address in `PAYOUT_WALLET`; the script adds `SOL:`
 and the worker suffix. Stop with `docker stop pearl-miner`, then remove
 with `docker rm pearl-miner` before reusing that container name.
 
+### Compose with scoped automatic updates
+
+From this repository, run:
+
+```sh
+docker compose up -d
+docker compose logs -f miner watchtower
+```
+
+If migrating from the old, unscoped configuration, first run
+`docker compose stop watchtower`, then `docker compose up -d` to recreate
+the updater with the new settings. Remove a standalone `pearl-miner`
+container before switching to Compose.
+
+The pinned Watchtower release checks `:current` every 900 seconds. Updates
+require all three: the name `pearl-miner`, the enable label, and the
+`pearl-miner` scope label. The updater itself has the same scope label
+but no enable label, so it is not automatically updated. Update its pinned
+image deliberately in Compose.
+
+**Keep `--scope` and the matching scope labels on both services.**
+`--label-enable` alone does not isolate Watchtower's startup cleanup of
+other Watchtower instances. The scope excludes unrelated Watchtower
+containers from that cleanup, including an unlabelled
+`containrrr/watchtower` in another Compose project. Do not reuse this scope
+for another updater. See the upstream
+[multiple-instance configuration](https://watchtower.nickfedor.com/advanced-features/running-multiple-instances/).
+
+**Image cleanup is disabled intentionally.** Old miner images remain
+available for rollback. Docker image IDs and tags are shared across
+projects; scope labels do not isolate image deletion. Do not add
+`--cleanup` or schedule daemon-wide image pruning as part of this stack.
+Only remove specific old images after checking all projects, including
+stopped containers, for dependencies.
+
+Scope is selection, not a Docker access-control boundary: the mounted
+socket gives Watchtower control of the daemon. Configure other Watchtower
+instances with their own distinct scope and matching labels (including
+on the updater), and disable their image cleanup too. An existing
+**unscoped** updater can still affect miner when it restarts or polls.
+
+To check coexistence on Docker Desktop, record the unrelated container
+and image before starting/recreating the miner stack (substitute its
+actual name and image tag):
+
+```sh
+docker inspect nextcloud-watchtower-1 --format '{{.Id}} {{.State.Status}} {{.State.StartedAt}} {{.RestartCount}} {{.Image}}'
+docker image inspect containrrr/watchtower:latest --format '{{.Id}} {{json .RepoTags}}'
+docker compose up -d
+docker compose logs watchtower
+```
+
+Repeat both inspect commands after startup and after an update. Their
+values must remain unchanged. For an immediate update check, run:
+
+```sh
+docker compose run --rm --no-deps watchtower --label-enable --scope pearl-miner --run-once pearl-miner
+```
+
+When `:current` changes, confirm Watchtower reports recreating only
+`pearl-miner`, the miner uses the new image, the old image is still
+inspectable by ID, and the unrelated container and image are unchanged.
+A check with no available update verifies selection, not recreation.
+
+Shared-daemon startup and recreation were tested on Linux Docker using a
+BusyBox stand-in for the miner and an unscoped `containrrr/watchtower:latest`.
+The unrelated container and image were unchanged, and the old miner image
+was retained. Repeat the checks above on your Windows/WSL2 host.
+
 ## Verify on Docker Desktop before unattended mining
 
 The flags request hardware settings; they do not prove the driver applies

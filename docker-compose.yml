@@ -7,6 +7,7 @@ services:
     pull_policy: always
     labels:
       - com.centurylinklabs.watchtower.enable=true
+      - com.centurylinklabs.watchtower.scope=pearl-miner
     deploy:
       resources:
         reservations:
@@ -20,11 +21,14 @@ services:
     #   WORKER: desktop3070ti
 
   # Polls the registry and recreates the miner when :current changes.
-  # Only containers with the watchtower.enable label are touched.
+  # Scope also isolates Watchtower's startup instance cleanup.
+  # Keep image cleanup disabled: image IDs can be shared across projects.
   watchtower:
-    image: nickfedor/watchtower
+    image: nickfedor/watchtower:1.23.2@sha256:62fb91130ddb493f869cad7e198fa260dd16c5da293ed092cbd5d8781566f7a6
     container_name: miner-watchtower
     restart: unless-stopped
-    command: --label-enable --cleanup --interval 900
+    command: --label-enable --scope pearl-miner --interval 900 pearl-miner
+    labels:
+      - com.centurylinklabs.watchtower.scope=pearl-miner
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
