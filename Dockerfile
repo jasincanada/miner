@@ -7,8 +7,9 @@
 # Runtime config:
 #   PAYOUT_WALLET  (default: baked-in public Solana payout address)
 #   WORKER         (default: desktop3070ti)
-#   POOL           (default: pearlpow.unmineable.com:3333)
-#   USE_TLS        (default: false)
+#   POOL           (default: pearlpow.unmineable.com:4444)
+#   USE_TLS        (default: true)
+# GPU intensity is automatic; requested fan is 100% and power limit is 290 W.
 #
 # Run with Nvidia Container Toolkit, for example:
 #   docker run --rm --gpus all \
