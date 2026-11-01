@@ -15,6 +15,7 @@
 #   WORKER   default: worker1
 #   POOL     default: pearlpow.unmineable.com:4444 (TLS). For TCP set
 #            POOL=pearlpow.unmineable.com:3333 and USE_TLS=false.
+#   GPU_FAN, GPU_POWER_LIMIT  optional; add --gpu-fan0 / --gpu-plimit0. Off by default.
 #   USE_TLS  default: true; set to "false" to omit --tls true
 set -eu
 
@@ -50,8 +51,6 @@ fi
 set -- /opt/srbminer/SRBMiner-MULTI \
     --disable-cpu \
     --algorithm pearlhash \
-    --gpu-fan0 100 \
-    --gpu-plimit0 290 \
     --pool "$POOL" \
     --wallet "SOL:${PAYOUT_WALLET}.${WORKER}"
 
@@ -59,12 +58,21 @@ if [ "$USE_TLS" = "true" ]; then
     set -- "$@" --tls true
 fi
 
+# Fan/power requests are opt-in: on Docker Desktop/WSL2 the NVML write calls
+# fail with "Insufficient Permissions", so they are off by default.
+if [ -n "${GPU_FAN:-}" ]; then
+    set -- "$@" --gpu-fan0 "$GPU_FAN"
+fi
+if [ -n "${GPU_POWER_LIMIT:-}" ]; then
+    set -- "$@" --gpu-plimit0 "$GPU_POWER_LIMIT"
+fi
+
 echo "--- Starting SRBMiner-MULTI ---"
 echo "Pool:   $POOL"
 echo "Wallet: SOL:${PAYOUT_WALLET}.${WORKER}"
 echo "TLS:    $USE_TLS"
-echo "GPU:    automatic intensity; requested fan 100%, power limit 290 W (verify on host)"
-echo "Command template: SRBMiner-MULTI --disable-cpu --algorithm pearlhash --gpu-fan0 100 --gpu-plimit0 290 --pool <pool> --wallet SOL:<sol-address>.<worker>[ --tls true ]"
+echo "GPU:    automatic intensity; fan=${GPU_FAN:-not requested} power_limit=${GPU_POWER_LIMIT:-not requested}"
+echo "Command template: SRBMiner-MULTI --disable-cpu --algorithm pearlhash --pool <pool> --wallet SOL:<sol-address>.<worker>[ --tls true ][ --gpu-fan0 \$GPU_FAN ][ --gpu-plimit0 \$GPU_POWER_LIMIT ]"
 
 # Keep the shell alive to supervise the miner in detached Docker runs.
 "$@" &
