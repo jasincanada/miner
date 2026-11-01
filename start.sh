@@ -74,6 +74,7 @@ stop_miner() {
     exit $?
 }
 
-trap 'stop_miner TERM' TERM
-trap 'stop_miner INT' INT
+# INT maps to TERM: a backgrounded child starts with SIGINT ignored in non-interactive sh.
+trap 'stop_miner TERM' TERM INT
+
 wait "$miner_pid"

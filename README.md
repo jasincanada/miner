@@ -10,7 +10,8 @@ so that is a snapshot, not a guarantee.
 
 - Nvidia CUDA 12.4.1 runtime, Ubuntu 22.04
 - SRBMiner-MULTI 3.8.1, PearlHash, MD5-verified at build time
-- `start.sh`, which refuses to start without a payout wallet
+- `start.sh`, which refuses to start if `PAYOUT_WALLET` is empty (the image
+  defaults it to the baked-in address and `WORKER` to `desktop3070ti`)
 
 Your public Solana payout address is baked in as the default, at your
 explicit request (2026-10-31). That address is public, it is the
