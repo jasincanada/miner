@@ -12,8 +12,9 @@ so that is a snapshot, not a guarantee.
 - SRBMiner-MULTI 3.8.3, PearlHash, MD5-verified at build time
 - `start.sh`, which refuses to start if `PAYOUT_WALLET` is empty (the image
   defaults it to the baked-in address and `WORKER` to `desktop3070ti`)
-- Automatic GPU intensity (no fixed `--gpu-intensity`). Fan and power flags
-  are opt-in (`GPU_FAN`, `GPU_POWER_LIMIT`); see below
+- Automatic GPU intensity and automatic fan. Fan and power flags are opt-in
+  (`GPU_FAN`, `GPU_POWER_LIMIT`) and fail on Docker Desktop; set a 290 W cap
+  on the host instead (see Power and fan)
 - TLS by default to `pearlpow.unmineable.com:4444`, with login
   `SOL:<Solana-address>.<worker>`
 - A supervising shell that waits for the miner and forwards TERM/INT,
@@ -78,50 +79,45 @@ Supply only the Solana address in `PAYOUT_WALLET`; the script adds `SOL:`
 and the worker suffix. Stop with `docker stop pearl-miner`, then remove
 with `docker rm pearl-miner` before reusing that container name.
 
-## Verify on Docker Desktop before unattended mining
+## Power and fan on Docker Desktop (Windows 11 / WSL2)
 
-**Fan and power cannot be set from inside the container on Docker
-Desktop/WSL2.** Host testing showed SRBMiner's NVML writes fail with
-`Insufficient Permissions (4)` (`PL0`/`FS0` FAILED), so `--gpu-fan0` and
-`--gpu-plimit0` are no longer passed by default. Set them from the Windows
-host instead: run `nvidia-smi -pl 290` in an Administrator PowerShell (resets
-on reboot) and use MSI Afterburner or your board's utility for fan. To still
-ask the miner to try, pass `-e GPU_FAN=100 -e GPU_POWER_LIMIT=290`. This repository update has **not** been
-validated on the target RTX 3070 Ti: no target GPU telemetry, pool jobs,
-or accepted shares were available in the development environment.
+**Fan and power cannot be set from inside the container.** SRBMiner's NVML
+writes fail with `Insufficient Permissions (4)` (`PL0`/`FS0` FAILED), so
+`--gpu-fan0` and `--gpu-plimit0` are not passed by default. They can be
+requested with `-e GPU_FAN=... -e GPU_POWER_LIMIT=...`, but on this setup
+they will fail.
 
-Build this source with `docker build -t miner:3.8.3 .` if the updated
-image is not yet available from the registry. Already-downloaded images
-do not change until rebuilt or updated from the registry.
+**Settings for the RTX 3070 Ti:**
 
-1. Use `docker logs -f pearl-miner` to check SRBMiner 3.8.3 detects the
-   RTX 3070 Ti, tunes intensity without a fixed override, connects via TLS
-   to `pearlpow.unmineable.com:4444` with `SOL:<address>.<worker>`, receives
-   pool jobs, and reports accepted (not merely submitted) shares. The
-   startup `TLS: true` line alone does not prove a connection or accepted
-   share.
-2. On the **Windows host**, run this in a second PowerShell window during
-   startup and sustained mining:
+- **Power cap: 290 W, set on the Windows host.** Run
+  `nvidia-smi -pl 290` in an Administrator PowerShell. It resets on reboot,
+  so repeat it after each restart. 310 W (the card's default limit) is the
+  absolute ceiling; never set the cap above it.
+- **Fan: automatic.** Leave the card's own fan control on auto. A fixed
+  100% fan target is not required and `nvidia-smi` cannot set fan speed on
+  this GPU. A host utility such as MSI Afterburner is optional.
+- **Intensity: automatic** (no `--gpu-intensity`).
+
+**Verified on the target host (v3.8.4, SRBMiner 3.8.3, 15+ minutes):**
+about 87-89 TH/s, 3 accepted and 0 rejected shares, draw 280-289 W under a
+290 W cap, temperature peak 84 C, automatic fan up to 99%, no restarts.
+
+**Check it yourself:**
+
+1. `docker logs -f pearl-miner` should show your GPU detected, TLS to
+   `pearlpow.unmineable.com:4444`, the `SOL:<address>.<worker>` login, jobs,
+   and `share accepted` lines. Judge shares only after the first few
+   minutes, while autotune runs.
+2. On the Windows host, in a second PowerShell window:
 
    ```powershell
-   nvidia-smi --query-gpu=name,fan.speed,power.limit,power.draw --format=csv -l 1
+   nvidia-smi --query-gpu=name,power.limit,power.draw,fan.speed,temperature.gpu --format=csv -l 1
    ```
 
-   Verify the effective power limit is 290 W and sampled board power
-   does not exceed 290 W. Use the board vendor's control utility to
-   confirm a manual **100% fan target**, and host sensor telemetry to
-   confirm fan speed/RPM responds accordingly. A logged command or
-   an `N/A` sensor value is not confirmation.
-3. Apply a manual 100% fan target and 290 W cap on the host as above.
-   On native Linux, `sudo nvidia-smi -i 0 -pl 290` can set the power cap
-   for GPU 0; fan control needs a supported host utility/driver setup.
-   Do not add `--privileged` or install a Linux NVIDIA driver in WSL
-   to work around unsupported controls.
-4. Repeat both miner and host checks after applying host settings.
-   Do not leave mining unattended if fan target or power cap cannot
-   be confirmed, or if observed power exceeds 290 W. Record image
-   tag/digest, driver version, fan target and speed, power limit and
-   maximum observed draw, pool jobs and accepted-share count.
+   Power limit should read 290 W with draw at or below it.
+3. Stop mining if temperature stays above 85 C or draw exceeds the cap.
+   Do not add `--privileged` or install a Linux NVIDIA driver in WSL to
+   work around the blocked controls.
 
 Check unMineable stats by your Solana wallet address for pool-side
 hashrate as an additional check, not a substitute for host telemetry.
