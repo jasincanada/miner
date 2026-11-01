@@ -20,7 +20,25 @@ you ever want payouts to a different address.
 
 ## Run it
 
-You need Docker with the Nvidia Container Toolkit, and an Nvidia GPU.
+You need Docker with GPU support and an Nvidia GPU.
+
+### Windows 11 + Docker Desktop (RTX 3070 Ti)
+
+- Install the current Nvidia Windows driver (Game Ready or Studio).
+  Do NOT install a Linux driver inside WSL.
+- Docker Desktop: Settings > General > "Use the WSL 2 based engine".
+  The Nvidia Container Toolkit is not needed on Windows.
+- Check GPU access first:
+  `docker run --rm --gpus all nvidia/cuda:12.4.1-base-ubuntu22.04 nvidia-smi`
+- Run the commands below in PowerShell. In PowerShell use a backtick
+  (`` ` ``) instead of `\` for line continuation, or put it on one line.
+- Keep the PC awake and plugged in while mining. The 3070 Ti has 8 GB
+  VRAM, which is fine for PearlHash. The miner autotunes on startup, so
+  expect a lower hashrate for the first few minutes.
+- Line endings: `.gitattributes` forces LF on `start.sh`, so a Windows
+  checkout does not break the build.
+
+On Linux you need the Nvidia Container Toolkit instead.
 
 ```sh
 docker run --rm --gpus all <image>

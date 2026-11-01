@@ -51,5 +51,9 @@ RUN chmod +x /opt/srbminer/start.sh
 ENV PAYOUT_WALLET=615Jb4hfGDPBrJvjdvjAgTAWbYzwz5jAF8Xt72FVRm3j
 ENV WORKER=desktop3070ti
 
+# Expose the GPU compute libs and nvidia-smi (needed on Docker Desktop/WSL2).
+ENV NVIDIA_VISIBLE_DEVICES=all
+ENV NVIDIA_DRIVER_CAPABILITIES=compute,utility
+
 WORKDIR /opt/srbminer
 ENTRYPOINT ["/opt/srbminer/start.sh"]
