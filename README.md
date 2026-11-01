@@ -11,6 +11,8 @@ so that is a snapshot, not a guarantee.
 - Nvidia CUDA 12.4.1 runtime, Ubuntu 22.04
 - SRBMiner-MULTI 3.8.1, PearlHash, MD5-verified at build time
 - `start.sh`, which refuses to start without a payout wallet
+- TLS by default to `pearlpow.unmineable.com:4444`, with login
+  `SOL:<Solana-address>.<worker>`
 
 Your public Solana payout address is baked in as the default, at your
 explicit request (2026-10-31). That address is public, it is the
@@ -41,8 +43,12 @@ You need Docker with GPU support and an Nvidia GPU.
 On Linux you need the Nvidia Container Toolkit instead.
 
 ```sh
-docker run --rm --gpus all <image>
+docker run -d --name pearl-miner --gpus all <image>
+docker logs -f pearl-miner
 ```
+
+`start.sh` supervises the miner in detached runs and forwards shutdown
+signals. Use `docker stop pearl-miner` to stop it.
 
 Or, to override the baked-in payout address:
 
@@ -55,11 +61,23 @@ docker run --rm --gpus all \
 
 Optional:
 
-- `POOL` — default `pearlpow.unmineable.com:3333` (TCP)
-- `USE_TLS=true` — switches to the SSL pool port automatically
+- `PAYOUT_WALLET` — bare Solana address; do not include `SOL:` or the worker
+- `WORKER` — image default `desktop3070ti` (standalone script: `worker1`)
+- `POOL` — default `pearlpow.unmineable.com:4444` (TLS)
+- `USE_TLS` — default `true`; adds `--tls true`. The standard unMineable
+  TCP endpoint is switched to port 4444 when TLS is enabled.
+- For plain TCP, set both `-e POOL=pearlpow.unmineable.com:3333`
+  and `-e USE_TLS=false`.
 
-Check the miner log for accepted shares, and check unMineable stats
-by your wallet address for the pool-side hashrate.
+### Verify on Docker Desktop
+
+Build the updated source below and use `miner:3.8.1` for `<image>` in the
+run examples. This local image includes the new defaults; an already
+downloaded image will not change until rebuilt or updated from the registry.
+With `--gpus all`, check `docker logs -f pearl-miner` for a TLS connection
+to port 4444, job receipt, and an accepted share. The startup `TLS: true`
+line alone does not prove a connection or an accepted share. Check
+unMineable stats by your bare wallet address for the pool-side hashrate.
 
 ## Build it yourself
 
@@ -75,6 +93,11 @@ GitHub Actions builds this on push to `main`:
 - Docker Hub: `<dockerhub-user>/miner:3.8.1`
   (requires the `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` repository
   secrets; that job is skipped until those secrets are set)
+
+The next successful build on `main` publishes the updated defaults under
+the existing `3.8.1` image tag. Pull again after publication to get them.
+The Git tag `v3.8.2` is not proof of a published `3.8.2` container image;
+the miner binary remains 3.8.1.
 
 ## Fees, in plain terms
 
