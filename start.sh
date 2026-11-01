@@ -15,6 +15,8 @@
 #   WORKER   default: worker1
 #   POOL     default: pearlpow.unmineable.com:3333 (TCP). For SSL set
 #            POOL=pearlpow.unmineable.com:4444 and USE_TLS=true.
+#   PAYOUT_COIN  default: SOL. unMineable pays out in the coin named by the
+#            login prefix (COIN:address.worker) while mining PRL.
 #   USE_TLS  default: false; set to "true" to add --tls true
 set -eu
 
@@ -27,6 +29,8 @@ fi
 WORKER="${WORKER:-worker1}"
 POOL="${POOL:-pearlpow.unmineable.com:3333}"
 USE_TLS="${USE_TLS:-false}"
+PAYOUT_COIN="${PAYOUT_COIN:-SOL}"
+LOGIN="${PAYOUT_COIN}:${PAYOUT_WALLET}.${WORKER}"
 
 # Fail-fast GPU sanity check: log what the container sees. A missing
 # nvidia-smi binary alone is only a warning (PATH quirks happen); the
@@ -51,7 +55,7 @@ set -- /opt/srbminer/SRBMiner-MULTI \
     --disable-cpu \
     --algorithm pearlhash \
     --pool "$POOL" \
-    --wallet "${PAYOUT_WALLET}.${WORKER}"
+    --wallet "$LOGIN"
 
 if [ "$USE_TLS" = "true" ]; then
     set -- "$@" --tls true
@@ -59,9 +63,9 @@ fi
 
 echo "--- Starting SRBMiner-MULTI ---"
 echo "Pool:   $POOL"
-echo "Wallet: ${PAYOUT_WALLET}.${WORKER}"
+echo "Wallet: $LOGIN"
 echo "TLS:    $USE_TLS"
-echo "Command template: SRBMiner-MULTI --disable-cpu --algorithm pearlhash --pool <pool> --wallet <sol-address>.<worker>[ --tls true ]"
+echo "Command template: SRBMiner-MULTI --disable-cpu --algorithm pearlhash --pool <pool> --wallet SOL:<sol-address>.<worker>[ --tls true ]"
 
 # Keep the shell alive to supervise the miner in detached Docker runs.
 "$@" &

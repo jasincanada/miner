@@ -56,6 +56,8 @@ docker run --rm --gpus all \
 
 Optional:
 
+- `PAYOUT_COIN` — default `SOL`; sent to the pool as the `SOL:<address>.<worker>`
+  login prefix, which tells unMineable to pay you in SOL while you mine PRL
 - `POOL` — default `pearlpow.unmineable.com:3333` (TCP)
 - `USE_TLS=true` — switches to the SSL pool port automatically
 
