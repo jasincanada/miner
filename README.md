@@ -123,6 +123,27 @@ do not change until rebuilt or updated from the registry.
 Check unMineable stats by your Solana wallet address for pool-side
 hashrate as an additional check, not a substitute for host telemetry.
 
+## Automatic updates (`:current`)
+
+`docker-compose.yml` runs the miner from `ghcr.io/jasincanada/miner:current`
+plus Watchtower, which checks every 15 minutes and recreates the miner when
+a new release is published.
+
+It is scoped (`--scope pearl-miner`), so it only touches the miner
+container. It will not stop other Watchtower containers or Compose projects
+on the same Docker daemon, and `--cleanup` only removes old images of the
+miner it updates. The `watchtower=false` label on `miner-watchtower` also
+stops other Watchtower instances from removing it. Other projects' Watchtowers
+still need their own `--label-enable` or scope if they must not touch the miner.
+
+```sh
+docker compose up -d
+```
+
+Watchtower needs the Docker socket, which gives it control of the host's
+Docker. Use the versioned tag instead of `:current` on any host where you
+want to pin a release and skip the Watchtower service.
+
 ## Build it yourself
 
 ```sh
