@@ -2,15 +2,16 @@
 
 Mine Pearl (PRL) on the unMineable PearlPow pool, with payouts in SOL.
 Intended for a desktop Nvidia GPU, specifically an RTX 3070 Ti:
-about 76 TH/s on WhatToMine's Pearl page, about $1.42/day revenue at
-that snapshot, before pool/miner fees. Pearl price and difficulty move,
+about 76 TH/s and $1.42/day revenue per WhatToMine's Pearl page at one
+point in time (not measured on this container), before pool/miner fees. Pearl price and difficulty move,
 so that is a snapshot, not a guarantee.
 
 ## What is in this image
 
 - Nvidia CUDA 12.4.1 runtime, Ubuntu 22.04
 - SRBMiner-MULTI 3.8.1, PearlHash, MD5-verified at build time
-- `start.sh`, which refuses to start without a payout wallet
+- `start.sh`, which refuses to start if `PAYOUT_WALLET` is empty (the image
+  defaults it to the baked-in address and `WORKER` to `desktop3070ti`)
 - Automatic GPU intensity (no fixed `--gpu-intensity`), requested 100% fan
   (`--gpu-fan0 100`) and 290 W power cap (`--gpu-plimit0 290`)
 - TLS by default to `pearlpow.unmineable.com:4444`, with login
