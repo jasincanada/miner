@@ -1,0 +1,30 @@
+services:
+  miner:
+    image: ghcr.io/jasincanada/miner:current
+    container_name: pearl-miner
+    restart: unless-stopped
+    stop_grace_period: 30s
+    pull_policy: always
+    labels:
+      - com.centurylinklabs.watchtower.enable=true
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    # Optional overrides:
+    # environment:
+    #   PAYOUT_WALLET: YOUR_SOL_ADDRESS
+    #   WORKER: desktop3070ti
+
+  # Polls the registry and recreates the miner when :current changes.
+  # Only containers with the watchtower.enable label are touched.
+  watchtower:
+    image: nickfedor/watchtower
+    container_name: miner-watchtower
+    restart: unless-stopped
+    command: --label-enable --cleanup --interval 900
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
