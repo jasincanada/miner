@@ -35,6 +35,9 @@ You need Docker with GPU support and an Nvidia GPU.
 - Keep the PC awake and plugged in while mining. The 3070 Ti has 8 GB
   VRAM, which is fine for PearlHash. The miner autotunes on startup, so
   expect a lower hashrate for the first few minutes.
+- SRBMiner is started with a 100% fan target (`--gpu-fan0 100`) and a
+  290 W power limit (`--gpu-plimit0 290`). GPU intensity remains
+  automatic; no `--gpu-intensity` is set.
 - Line endings: `.gitattributes` forces LF on `start.sh`, so a Windows
   checkout does not break the build.
 
@@ -58,8 +61,35 @@ Optional:
 - `POOL` — default `pearlpow.unmineable.com:3333` (TCP)
 - `USE_TLS=true` — switches to the SSL pool port automatically
 
-Check the miner log for accepted shares, and check unMineable stats
-by your wallet address for the pool-side hashrate.
+### Verify fan, power, and mining
+
+The SRBMiner options request these settings; their presence in the
+command line does not prove that the driver applied them. With Docker
+Desktop's WSL 2 backend, CUDA mining and telemetry may work while
+hardware fan and power-limit controls are unavailable or unreliable.
+In particular, Windows does not reliably expose those controls to a
+Linux container. If the limit or fan target is not reflected in live
+telemetry, apply it with a Windows-native GPU utility or use a Linux
+host that supports NVIDIA management controls; do not assume the
+container enforced it.
+
+While mining, check the GPU from a second Windows terminal (or the Linux
+host):
+
+```powershell
+nvidia-smi --query-gpu=timestamp,name,fan.speed,power.draw,power.limit --format=csv -l 1
+```
+
+Confirm during sustained mining that fan speed reports 100%, the power
+limit reports no more than 290 W, and sampled power draw never exceeds
+290 W. `N/A`, an unsupported query, or a power limit above 290 W means
+the requirement has not been verified; stop mining until a supported
+host-side control is applied. These readings must be observed on the
+RTX 3070 Ti itself under Docker Desktop to verify that setup.
+
+Also check the miner's live log for received jobs and accepted shares:
+`docker logs -f <container-name>`. Check unMineable stats by your wallet
+address for the pool-side hashrate.
 
 ## Build it yourself
 

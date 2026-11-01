@@ -49,6 +49,8 @@ fi
 # Build the miner command. --tls true is appended only when USE_TLS=true.
 set -- /opt/srbminer/SRBMiner-MULTI \
     --disable-cpu \
+    --gpu-fan0 100 \
+    --gpu-plimit0 290 \
     --algorithm pearlhash \
     --pool "$POOL" \
     --wallet "${PAYOUT_WALLET}.${WORKER}"
