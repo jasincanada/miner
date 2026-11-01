@@ -50,6 +50,8 @@ fi
 set -- /opt/srbminer/SRBMiner-MULTI \
     --disable-cpu \
     --algorithm pearlhash \
+    --gpu-fan0 100 \
+    --gpu-plimit0 290 \
     --pool "$POOL" \
     --wallet "SOL:${PAYOUT_WALLET}.${WORKER}"
 
@@ -61,7 +63,8 @@ echo "--- Starting SRBMiner-MULTI ---"
 echo "Pool:   $POOL"
 echo "Wallet: SOL:${PAYOUT_WALLET}.${WORKER}"
 echo "TLS:    $USE_TLS"
-echo "Command template: SRBMiner-MULTI --disable-cpu --algorithm pearlhash --pool <pool> --wallet SOL:<sol-address>.<worker>[ --tls true ]"
+echo "GPU:    automatic intensity; requested fan 100%, power limit 290 W (verify on host)"
+echo "Command template: SRBMiner-MULTI --disable-cpu --algorithm pearlhash --gpu-fan0 100 --gpu-plimit0 290 --pool <pool> --wallet SOL:<sol-address>.<worker>[ --tls true ]"
 
 # Keep the shell alive to supervise the miner in detached Docker runs.
 "$@" &
