@@ -7,6 +7,7 @@ services:
     pull_policy: always
     labels:
       - com.centurylinklabs.watchtower.enable=true
+      - com.centurylinklabs.watchtower.scope=pearl-miner
     deploy:
       resources:
         reservations:
@@ -20,11 +21,17 @@ services:
     #   WORKER: desktop3070ti
 
   # Polls the registry and recreates the miner when :current changes.
-  # Only containers with the watchtower.enable label are touched.
+  # Scoped to the pearl-miner scope, so it ignores every other container
+  # (including other Watchtowers). The watchtower=false label hides this
+  # container from other Watchtower instances, which would otherwise stop
+  # it as a "duplicate Watchtower".
   watchtower:
     image: nickfedor/watchtower
     container_name: miner-watchtower
     restart: unless-stopped
-    command: --label-enable --cleanup --interval 900
+    command: --scope pearl-miner --label-enable --cleanup --interval 900
+    labels:
+      - com.centurylinklabs.watchtower.scope=pearl-miner
+      - com.centurylinklabs.watchtower=false
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
