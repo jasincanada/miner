@@ -64,17 +64,27 @@ by your wallet address for the pool-side hashrate.
 ## Build it yourself
 
 ```sh
-docker build -t miner:3.8.1 .
+docker build -t miner:3.8.2 .
 ```
 
 ## Images
 
-GitHub Actions builds this on push to `main`:
+The source release is tagged `v3.8.2`; its corresponding container image
+tag is `3.8.2` (without the `v`). GitHub Actions publishes images when a
+versioned source tag is pushed:
 
-- GitHub Container Registry: `ghcr.io/<owner>/miner:3.8.1`
-- Docker Hub: `<dockerhub-user>/miner:3.8.1`
+- GitHub Container Registry: `ghcr.io/<owner>/miner:3.8.2`
+- Docker Hub: `<dockerhub-user>/miner:3.8.2`
   (requires the `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` repository
   secrets; that job is skipped until those secrets are set)
+
+The source tag alone does not confirm that an image was published. Check
+the registry before describing or using `3.8.2` as an available image.
+The image contains SRBMiner-MULTI 3.8.1; that is the miner binary version,
+not the container image tag. Before the next image release, resolve the
+verified pool-default and GPU-requirement issues and complete the GPU,
+supervised-startup, TLS/SOL-login, automatic-intensity, fan-target, and
+290 W-cap smoke tests.
 
 ## Fees, in plain terms
 
