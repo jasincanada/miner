@@ -1,0 +1,65 @@
+# Pearl miner — desktop Docker container
+
+Mine Pearl (PRL) on the unMineable PearlPow pool, with payouts in SOL.
+Built for a desktop Nvidia GPU, tested in spirit for an RTX 3070 Ti:
+about 76 TH/s on WhatToMine's Pearl page, about $1.42/day revenue at
+that snapshot, before pool/miner fees. Pearl price and difficulty move,
+so that is a snapshot, not a guarantee.
+
+## What is in this image
+
+- Nvidia CUDA 12.4.1 runtime, Ubuntu 22.04
+- SRBMiner-MULTI 3.8.1, PearlHash, MD5-verified at build time
+- `start.sh`, which refuses to start without a payout wallet
+
+Your public Solana payout address is baked in as the default, at your
+explicit request (2026-10-31). That address is public, it is the
+unMineable login, and it cannot spend funds. No private key, seed
+phrase, or credential is in the image. Override it at run time if
+you ever want payouts to a different address.
+
+## Run it
+
+You need Docker with the Nvidia Container Toolkit, and an Nvidia GPU.
+
+```sh
+docker run --rm --gpus all <image>
+```
+
+Or, to override the baked-in payout address:
+
+```sh
+docker run --rm --gpus all \
+  -e PAYOUT_WALLET=ANOTHER_SOLANA_ADDRESS \
+  -e WORKER=desktop3070ti \
+  <image>
+```
+
+Optional:
+
+- `POOL` — default `pearlpow.unmineable.com:3333` (TCP)
+- `USE_TLS=true` — switches to the SSL pool port automatically
+
+Check the miner log for accepted shares, and check unMineable stats
+by your wallet address for the pool-side hashrate.
+
+## Build it yourself
+
+```sh
+docker build -t miner:3.8.1 .
+```
+
+## Images
+
+GitHub Actions builds this on push to `main`:
+
+- GitHub Container Registry: `ghcr.io/<owner>/miner:3.8.1`
+- Docker Hub: `<dockerhub-user>/miner:3.8.1`
+  (requires the `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` repository
+  secrets; that job is skipped until those secrets are set)
+
+## Fees, in plain terms
+
+- SRBMiner PearlHash dev fee: 3%
+- unMineable: about 1% conversion fee, 0.05 SOL minimum payout, daily
+- This container adds no fee of its own, and it does not phone home
