@@ -47,7 +47,7 @@ You need Docker with GPU support and an Nvidia GPU.
 On Linux you need the Nvidia Container Toolkit instead.
 
 ```sh
-docker run -d --name pearl-miner --gpus all ghcr.io/jasincanada/miner:3.8.2
+docker run -d --name pearl-miner --gpus all ghcr.io/jasincanada/miner:current
 docker logs -f pearl-miner
 ```
 
@@ -60,7 +60,7 @@ Or, to override the baked-in payout address:
 docker run -d --name pearl-miner --gpus all \
   -e PAYOUT_WALLET=ANOTHER_SOLANA_ADDRESS \
   -e WORKER=desktop3070ti \
-  ghcr.io/jasincanada/miner:3.8.2
+  ghcr.io/jasincanada/miner:current
 ```
 
 Optional:
@@ -139,6 +139,10 @@ versioned source tag is pushed:
 - Docker Hub: `<dockerhub-user>/miner:3.8.2`
   (requires the `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` repository
   secrets; that job is skipped until those secrets are set)
+
+Each release build also moves the floating `current` tag (same registries,
+e.g. `ghcr.io/<owner>/miner:current`) to the newest image. Pin a version
+tag if you need reproducibility.
 
 The source tag alone does not confirm that an image was published. Check
 the registry before describing or using `3.8.2` as an available image.
