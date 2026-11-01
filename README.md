@@ -47,7 +47,7 @@ You need Docker with GPU support and an Nvidia GPU.
 On Linux you need the Nvidia Container Toolkit instead.
 
 ```sh
-docker run -d --name pearl-miner --gpus all ghcr.io/jasincanada/miner:3.8.1-1
+docker run -d --name pearl-miner --gpus all ghcr.io/jasincanada/miner:3.8.2
 docker logs -f pearl-miner
 ```
 
@@ -60,7 +60,7 @@ Or, to override the baked-in payout address:
 docker run -d --name pearl-miner --gpus all \
   -e PAYOUT_WALLET=ANOTHER_SOLANA_ADDRESS \
   -e WORKER=desktop3070ti \
-  ghcr.io/jasincanada/miner:3.8.1-1
+  ghcr.io/jasincanada/miner:3.8.2
 ```
 
 Optional:
@@ -85,7 +85,7 @@ them. Docker Desktop/WSL2 may not expose fan or power management even when
 validated on the target RTX 3070 Ti: no target GPU telemetry, pool jobs,
 or accepted shares were available in the development environment.
 
-Build this source with `docker build -t miner:3.8.1-1 .` if the updated
+Build this source with `docker build -t miner:3.8.2 .` if the updated
 image is not yet available from the registry. Already-downloaded images
 do not change until rebuilt or updated from the registry.
 
