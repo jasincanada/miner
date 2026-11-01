@@ -13,8 +13,9 @@
 #                  address and NOT a PRL address)
 # Optional:
 #   WORKER   default: worker1
-#   POOL     default: pearlpow.unmineable.com:4444 (TLS)
-#   USE_TLS  default: true; set to "false" with a TCP pool to disable TLS
+#   POOL     default: pearlpow.unmineable.com:4444 (TLS). For TCP set
+#            POOL=pearlpow.unmineable.com:3333 and USE_TLS=false.
+#   USE_TLS  default: true; set to "false" to omit --tls true
 set -eu
 
 if [ -z "${PAYOUT_WALLET:-}" ]; then
@@ -40,7 +41,7 @@ fi
 
 # TLS note: unMineable's SSL endpoint is a different port (4444), not
 # a flag on the TCP port. If TLS is requested and POOL is still the
-# TCP default, switch to the SSL endpoint automatically.
+# standard TCP endpoint, switch to the SSL endpoint automatically.
 if [ "$USE_TLS" = "true" ] && [ "$POOL" = "pearlpow.unmineable.com:3333" ]; then
     POOL="pearlpow.unmineable.com:4444"
 fi

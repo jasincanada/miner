@@ -13,7 +13,8 @@ so that is a snapshot, not a guarantee.
 - `start.sh`, which refuses to start without a payout wallet
 - Automatic GPU intensity (no fixed `--gpu-intensity`), requested 100% fan
   (`--gpu-fan0 100`) and 290 W power cap (`--gpu-plimit0 290`)
-- TLS to `pearlpow.unmineable.com:4444`, login `SOL:<address>.<worker>`
+- TLS by default to `pearlpow.unmineable.com:4444`, with login
+  `SOL:<Solana-address>.<worker>`
 - A supervising shell that waits for the miner and forwards TERM/INT,
   including in detached Docker runs
 
@@ -50,6 +51,9 @@ docker run -d --name pearl-miner --gpus all ghcr.io/jasincanada/miner:3.8.1-1
 docker logs -f pearl-miner
 ```
 
+`start.sh` supervises the miner in detached runs and forwards shutdown
+signals. Use `docker stop pearl-miner` to stop it.
+
 Or, to override the baked-in payout address:
 
 ```sh
@@ -61,16 +65,19 @@ docker run -d --name pearl-miner --gpus all \
 
 Optional:
 
+- `PAYOUT_WALLET` — bare Solana address; do not include `SOL:` or the worker
+- `WORKER` — image default `desktop3070ti` (standalone script: `worker1`)
 - `POOL` — default `pearlpow.unmineable.com:4444` (TLS)
-- `USE_TLS` — default `true`; for TCP explicitly set `USE_TLS=false`
-  and a TCP endpoint. TLS also upgrades the old unMineable `:3333`
-  endpoint to `:4444`.
+- `USE_TLS` — default `true`; adds `--tls true`. The standard unMineable
+  TCP endpoint is switched to port 4444 when TLS is enabled.
+- For plain TCP, set both `-e POOL=pearlpow.unmineable.com:3333`
+  and `-e USE_TLS=false`.
 
 Supply only the Solana address in `PAYOUT_WALLET`; the script adds `SOL:`
 and the worker suffix. Stop with `docker stop pearl-miner`, then remove
 with `docker rm pearl-miner` before reusing that container name.
 
-## Verify on the target GPU before unattended mining
+## Verify on Docker Desktop before unattended mining
 
 The flags request hardware settings; they do not prove the driver applies
 them. Docker Desktop/WSL2 may not expose fan or power management even when
@@ -78,10 +85,16 @@ them. Docker Desktop/WSL2 may not expose fan or power management even when
 validated on the target RTX 3070 Ti: no target GPU telemetry, pool jobs,
 or accepted shares were available in the development environment.
 
+Build this source with `docker build -t miner:3.8.1-1 .` if the updated
+image is not yet available from the registry. Already-downloaded images
+do not change until rebuilt or updated from the registry.
+
 1. Use `docker logs -f pearl-miner` to check SRBMiner 3.8.1 detects the
    RTX 3070 Ti, tunes intensity without a fixed override, connects via TLS
    to `pearlpow.unmineable.com:4444` with `SOL:<address>.<worker>`, receives
-   pool jobs, and reports accepted (not merely submitted) shares.
+   pool jobs, and reports accepted (not merely submitted) shares. The
+   startup `TLS: true` line alone does not prove a connection or accepted
+   share.
 2. On the **Windows host**, run this in a second PowerShell window during
    startup and sustained mining:
 
@@ -128,6 +141,11 @@ automatically.
 - Docker Hub: `<dockerhub-user>/miner:3.8.1-1`
   (requires the `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` repository
   secrets; that job is skipped until those secrets are set)
+
+The next successful build on `main` publishes the updated defaults as
+`3.8.1-1`. Pull that tag after publication to get them.
+The Git tag `v3.8.2` is not proof of a published `3.8.2` container image;
+the miner binary remains 3.8.1.
 
 ## Fees, in plain terms
 

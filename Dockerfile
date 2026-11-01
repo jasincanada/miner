@@ -9,7 +9,8 @@
 #   WORKER         (default: desktop3070ti)
 #   POOL           (default: pearlpow.unmineable.com:4444)
 #   USE_TLS        (default: true)
-# GPU intensity is automatic; requested fan is 100% and power limit is 290 W.
+# GPU intensity is automatic; requested fan is 100% and power limit is 290 W
+# (verify effective settings on the host).
 #
 # Run with Nvidia Container Toolkit, for example:
 #   docker run --rm --gpus all \
