@@ -43,8 +43,12 @@ and design: same information, same sections, rebuilt as Vue components.
   call or playback this same background goes live with his voice
   (see Roadmap item 5).
 - **The scene (agreed Nov 25)**: the motion background is a cozy
-  Christmas living room. Cosmo the tabby and his kitten brothers play
-  with their toys on the rug; a Christmas tree glows; gingerbread
+  Christmas living room. Cosmo the tabby — in his Christmas outfit,
+  the snug Santa hat and Christmas collar, the way Jas sees him on
+  screen — and his kitten brothers play with their toys on the rug;
+  at times Cosmo snuggles up to his Christmas plaid catnip kick toy,
+  bunny-kicking it and rubbing his head against it, purring. A
+  Christmas tree glows; gingerbread
   cookies and a glass of milk sit nearby; a coffee table holds a
   Bible; Jas rests on the couch under a big blanket with his favorite
   woman beside him, watching Christmas shows. Through the windows,
@@ -52,6 +56,18 @@ and design: same information, same sections, rebuilt as Vue components.
   children tobogganing down a hill. The feeling to hit: warm, happy,
   family — Christmas magic. The scene stays ambient and behind the
   content; the dashboard remains the main element.
+
+## Why this exists (his words, Nov 25, 2026)
+
+The recorder exists so Jas can: (1) hold people accountable for how
+they treat him on calls — an accurate record that can be proven,
+including for legal needs (the Fraser Health calls of Nov 24 are his
+example); (2) coordinate exactly with his AI — calls become
+transcripts the AI can work from, so his days run correctly;
+(3) remember — he is forgetful, and transcripts feed his briefings
+so life runs on what actually happened, not on memory; (4) state
+accurately what happened on a call. Every feature in the roadmap
+serves one of those four purposes.
 
 ## Roadmap — capabilities Jas approved (Nov 25, 2026)
 
