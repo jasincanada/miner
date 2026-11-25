@@ -1,29 +1,46 @@
-# Deploy: Call Recorder page on the EPYC
+# Deploy: Call Recorder site on the EPYC
 
 ## Goal
 
-Serve `call-recorder.html` (in this same `site/` folder) at
-**https://callrecorder.cryptocomputer.ca** from the EPYC, behind a login.
-The page contains operational details about Jas's call-recording system,
-so it must NOT be reachable without authentication.
+Serve the Call Recorder dashboard at **https://callrecorder.cryptocomputer.ca**
+from the EPYC, behind a login. The page contains operational details about
+Jas's call-recording system, so it must NOT be reachable without
+authentication.
+
+## Stack (Jas's standing rules — do not substitute)
+
+- **Front-end: Vue 3 + TypeScript, built with Vite.** State-of-the-art
+  modern component design — this is a real app, not a plain HTML file.
+- **Database: none needed for this dashboard.** If any persistence is
+  ever added, it is **Postgres only** (his standing rule).
+- The language is JavaScript/TypeScript running on **Node.js** (his
+  call, Nov 25). No separate Java service — nothing here needs one.
+
+## Content reference
+
+`site/call-recorder.html` (in this folder) is the finished static version
+of the page. Use it as the exact reference for the app's content, wording,
+and design: same information, same sections, rebuilt as Vue components.
 
 ## What to do
 
-1. Pull this branch (`telnyx-recorder` of `jasincanada/miner`) and take
-   `site/call-recorder.html` as the page file. It is one self-contained
-   HTML file; it needs no build step and no other assets.
-2. On the EPYC, stand up a small static container for it, following the
-   house pattern used for the other stacks (e.g. `nginx:alpine` serving
-   the single file, with a docker-compose entry alongside the existing
-   stacks). Bind it to a localhost/internal port only; nginx in front
-   is the public face.
-3. In Nginx UI, create the site `callrecorder.cryptocomputer.ca`
+1. Pull this branch (`telnyx-recorder` of `jasincanada/miner`).
+2. Scaffold the Vue 3 + TypeScript project at `site/app/` (e.g.
+   `npm create vue@latest` with TypeScript on) and build the dashboard
+   into it from the reference file.
+3. Containerize it with a multi-stage Dockerfile: a **Node.js** build
+   stage (current LTS, e.g. `node:22-alpine`; `npm ci && npm run build`)
+   and a small serve stage (nginx:alpine serving the built files). Add
+   the compose entry alongside the existing stacks on the EPYC,
+   following the house pattern. Bind to a localhost/internal port
+   only; nginx in front is the public face.
+4. In Nginx UI, create the site `callrecorder.cryptocomputer.ca`
    proxying to that container, with authentication in front of it
    (basic auth is acceptable; if the box already has an auth setup,
    use that). Jas sets/chooses the password — ask him; do not leave a
    password you invented in a place he cannot find. HTTPS the way the
    other sites on this box are done (they sit behind Cloudflare).
-4. Constraints:
+5. Constraints:
    - Use system-vg paths only. The data NVMe (data-vg, /srv/data) is
      dead and offline by design; do not try to use it.
    - /var/log was at about 81% (35 GB free) on Nov 25 — keep this
@@ -31,14 +48,15 @@ so it must NOT be reachable without authentication.
    - Do not disturb any existing containers or services.
    - Do not touch Nextcloud (that lives on the 5900X, and someone else
      is working on it).
-5. Verify before reporting done: from a browser, the address loads,
-   access is blocked without the login, and the page renders after
+6. Verify before reporting done: from a browser, the address loads,
+   access is blocked without the login, and the app renders after
    login.
 
 ## Report back to Jas
 
 - The final URL.
 - The container name and the port it listens on.
-- Where the page file and the compose entry live on the EPYC.
-- How to update the page later (expected: replace the one HTML file
-  from this repo path and restart the one container).
+- Where the app source, the built files, and the compose entry live
+  on the EPYC.
+- How to update the site later (expected: edit the Vue source,
+  rebuild, restart the one container).
