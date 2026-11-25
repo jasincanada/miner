@@ -35,6 +35,13 @@ and design: same information, same sections, rebuilt as Vue components.
   dismissed. Settings, details, help text, and status extras are
   pop-in/pop-out, never permanent furniture.
 - Large, readable type throughout (Jas reads best at large sizes).
+- **The background is motion** (his words, Nov 25): the page background
+  is a living motion layer — the waveform field flowing gently behind
+  the content — never a flat static backdrop. Keep it slow, subtle,
+  and low-contrast so text stays perfectly readable on top of it, and
+  respect reduced-motion settings with a calm still mode. During a
+  call or playback this same background goes live with his voice
+  (see Roadmap item 5).
 
 ## Roadmap — capabilities Jas approved (Nov 25, 2026)
 
