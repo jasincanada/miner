@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Cosmo-originated call, part 1: speak the prepared message, then record the reply.
+     The message text between the Say tags is replaced for each call before publishing.
+     The Record action points at cosmo-bye.xml so the flow ends cleanly instead of looping. -->
+<Response>
+  <Say>Hello Fo, this is Cosmo, Jas's other assistant. This is a test call. I am proving that I can place a call, speak, and record the reply. Please say a few sentences back to me now, so we can check that the recording captured your voice. When you finish, I will say goodbye and hang up. Thank you.</Say>
+  <Record maxLength="300" timeout="10" playBeep="false" recordingChannels="single" recordingFormat="mp3" action="https://raw.githubusercontent.com/jasincanada/miner/telnyx-recorder/cosmo-bye.xml"/>
+</Response>
