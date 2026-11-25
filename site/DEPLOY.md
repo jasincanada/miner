@@ -36,6 +36,30 @@ and design: same information, same sections, rebuilt as Vue components.
   pop-in/pop-out, never permanent furniture.
 - Large, readable type throughout (Jas reads best at large sizes).
 
+## Roadmap — capabilities Jas approved (Nov 25, 2026)
+
+Build the dashboard first; these bolt on in this order. All were
+pitched to Jas and approved by him ("All of those things get me
+excited").
+
+1. **Live status tiles** — recorder health, last recording, Telnyx
+   balance, transcriber status, updating live instead of frozen text.
+2. **Recordings library** — every recording appears as it lands:
+   in-browser playback, the transcript beside it, and full-text
+   search across every transcript. Needs a small back-end service;
+   if the library is stored, it is stored in **Postgres** (his rule).
+3. **A phone inside the page** — a WebRTC dialer (Telnyx WebRTC) in
+   the site itself, so recorded calls happen in the browser with no
+   separate softphone app or SIP password to manage.
+4. **One-tap call actions** — buttons (e.g. "Call Fo") that place a
+   call through the proven Telnyx outbound route, with the transcript
+   delivered automatically afterward.
+5. **Voice-live motion** — motion is part of the design, and it is
+   LIVE WITH THE SOUND OF HIS VOICE (his words, Nov 25): during a
+   call or playback, the waveform animates in real time with the
+   actual audio. Panels slide in and out like drawers. Motion stays
+   gentle and calm — alive, never busy or distracting.
+
 ## What to do
 
 1. Pull this branch (`telnyx-recorder` of `jasincanada/miner`).
