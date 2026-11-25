@@ -151,3 +151,31 @@ excited").
   critical path — the code is the easy part. If a quality Rive rig
   cannot be produced, simplify the art style rather than shipping
   janky animation.
+
+### Second-opinion review (DeepSeek-R1 via DeepInfra, Nov 25)
+
+Adopted from the review:
+- **Cleanup is a requirement**: on unmount / tab-hide, release the
+  Web Audio nodes, PixiJS textures, and Rive instances — leaks are
+  the top production failure mode for this stack.
+- **Serving checks for `.riv` / `.wasm` in the nginx container**:
+  MIME types (`application/wasm` for .wasm, `application/octet-stream`
+  for .riv), long immutable cache headers on versioned assets,
+  gzip/brotli enabled for them, CSP that permits WASM execution,
+  and a curl check (`200` + correct Content-Type) as part of deploy
+  verification. Ad-blockers and CORS can also break these assets —
+  test in a real browser, not only vite dev.
+- **Kitten Plan B**: if the Rive rig is not ready, ship PixiJS sprite
+  clips (sleep / bat / pounce loops) switched by energy thresholds
+  in the same canvas, and upgrade to Rive later. Rive remains the
+  target — sprites are the fallback, not the destination.
+
+Considered and NOT adopted (Cosmo's call, Nov 25):
+- Simulating the "energy" with sine-wave math instead of the real
+  AnalyserNode. Rejected: the scene responding to Jas's actual voice
+  is the point of the feature. Audio must degrade gracefully when
+  unavailable, but it is never faked.
+- Hardcoding devicePixelRatio = 1. Rejected in favour of the caps
+  above plus an FPS-probe auto quality tier.
+- Dropping the in-app Living / Calm / Still toggle. Kept: the toggle
+  is Jas's own control, separate from the OS reduced-motion setting.
