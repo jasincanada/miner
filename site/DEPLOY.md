@@ -22,6 +22,20 @@ authentication.
 of the page. Use it as the exact reference for the app's content, wording,
 and design: same information, same sections, rebuilt as Vue components.
 
+## Design requirements (Jas's words, Nov 25)
+
+- **Responsive, one design that reshapes itself**: equally good on
+  phone, tablet, and desktop. Very well designed, modern, state of
+  the art.
+- **Screen-space efficient**: the main elements own the screen. Nothing
+  secondary may squat on space the main content needs.
+- **Pop-in / pop-out elements**: every element that is not a main
+  element lives in a collapsible panel, drawer, or expandable card —
+  tucked away by default, popping in when summoned and out when
+  dismissed. Settings, details, help text, and status extras are
+  pop-in/pop-out, never permanent furniture.
+- Large, readable type throughout (Jas reads best at large sizes).
+
 ## What to do
 
 1. Pull this branch (`telnyx-recorder` of `jasincanada/miner`).
