@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="light dark" />
+<link rel="icon" href="data:," />
+<title>Call Recorder — 778-752-9955</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,600;6..72,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f6f4ef; --surface:#ffffff; --surface-2:#eef2ef; --ink:#17201c; --muted:#5c6b64; --line:#dde3de;
+    --teal:#0c5f57; --teal-2:#0e756a; --amber:#b45309; --red:#c2410c; --red-dot:#dc2626;
+    --chip:#e6efe9; --shadow:0 10px 30px rgba(23,32,28,.08);
+    --radius:18px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#101512; --surface:#1a211e; --surface-2:#232c28; --ink:#edf2ef; --muted:#a7b5ad; --line:#2e3a35;
+      --teal:#5ec8ba; --teal-2:#7dd3c8; --amber:#f0b26b; --red:#fb923c; --chip:#24332e; --shadow:0 10px 30px rgba(0,0,0,.35);
+    }
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans",system-ui,-apple-system,Segoe UI,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased}
+  a{color:var(--teal)}
+  button,[role="button"]{min-height:44px}
+  .wrap{max-width:1080px;margin:0 auto;padding:20px 18px 56px}
+  /* top bar */
+  .topbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;padding:6px 0 18px}
+  .badge{display:inline-flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:8px 14px;font-size:13px;font-weight:600}
+  .dot{width:9px;height:9px;border-radius:50%;background:#16a34a;box-shadow:0 0 0 4px rgba(22,163,74,.18);flex:none}
+  .dot.rec{background:var(--red-dot);box-shadow:0 0 0 4px rgba(220,38,38,.16);animation:pulse 1.8s infinite}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 3px rgba(220,38,38,.22)}50%{box-shadow:0 0 0 7px rgba(220,38,38,.06)}}
+  @media (prefers-reduced-motion: reduce){.dot.rec{animation:none}.wave span{animation:none!important}}
+  .date{font-size:13px;color:var(--muted);font-family:"IBM Plex Mono",monospace}
+  /* hero */
+  .hero{background:var(--surface);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow);padding:28px 26px 24px;overflow:hidden;position:relative}
+  .hero::before{content:"";position:absolute;inset:0 0 auto 0;height:4px;background:var(--teal)}
+  .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:var(--teal);margin:2px 0 10px}
+  h1{font-family:"Newsreader",Georgia,serif;font-size:clamp(32px,5vw,52px);line-height:.95;letter-spacing:-.02em;margin:0 0 12px;font-weight:700;max-width:640px}
+  .lede{font-size:17px;color:var(--muted);max-width:620px;margin:0 0 22px}
+  .lede strong{color:var(--ink)}
+  .number-row{display:flex;flex-wrap:wrap;gap:14px;align-items:stretch}
+  .number-card{flex:1 1 320px;background:var(--ink);color:#fff;border-radius:16px;padding:20px 20px 18px}
+  @media (prefers-color-scheme: dark){.number-card{background:#0a0f0d;border:1px solid var(--line)}}
+  .number-label{font-size:11px;letter-spacing:.14em;text-transform:uppercase;opacity:.7;font-weight:700}
+  .number{font-family:"IBM Plex Mono",monospace;font-size:clamp(30px,6vw,44px);font-weight:600;letter-spacing:-.03em;line-height:1;margin:8px 0 6px;white-space:nowrap}
+  .number-sub{font-size:13.5px;opacity:.82;line-height:1.45}
+  .wave{display:flex;align-items:flex-end;gap:3px;height:36px;margin-top:16px}
+  .wave span{display:block;width:4px;border-radius:99px;background:#5ec8ba;animation:eq 1.1s ease-in-out infinite}
+  .wave span:nth-child(3n){background:#f0b26b}
+  @keyframes eq{0%,100%{transform:scaleY(.45)}50%{transform:scaleY(1)}}
+  .actions{flex:0 1 240px;display:flex;flex-direction:column;gap:10px}
+  .btn{appearance:none;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:12px;padding:12px 16px;font:inherit;font-weight:600;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px;text-align:left;width:100%}
+  .btn:hover{border-color:var(--teal)}
+  .btn.primary{background:var(--teal);color:#fff;border-color:var(--teal)}
+  @media (prefers-color-scheme: dark){.btn.primary{color:#0b1513}}
+  .btn small{font-weight:400;opacity:.75;font-size:12.5px}
+  .copied{font-size:13px;color:var(--teal);font-weight:600;min-height:20px}
+  /* pipeline */
+  .section{margin-top:28px}
+  .section-head{display:flex;align-items:baseline;justify-content:space-between;gap:16px;margin-bottom:14px}
+  h2{font-family:"Newsreader",Georgia,serif;font-size:28px;line-height:1;margin:0;letter-spacing:-.02em}
+  .section-head p{margin:0;color:var(--muted);font-size:14px}
+  .pipeline{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .step{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px}
+  .step-num{width:36px;height:36px;border-radius:50%;background:var(--chip);color:var(--teal);display:grid;place-items:center;font-weight:700;font-family:"IBM Plex Mono",monospace;font-size:14px;margin-bottom:12px}
+  .step h3{margin:0 0 6px;font-size:16px}
+  .step p{margin:0;color:var(--muted);font-size:14px;line-height:1.5}
+  .step .meta{margin-top:10px;font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--ink);background:var(--surface-2);display:inline-block;padding:4px 8px;border-radius:6px}
+  /* grid */
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px}
+  .card h3{margin:0 0 8px;font-size:18px;line-height:1.2}
+  .card p{color:var(--muted);font-size:14.5px}
+  .tag{display:inline-block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;padding:5px 9px;border-radius:999px;margin-bottom:12px}
+  .tag.live{background:#dcfce7;color:#166534}
+  .tag.soon{background:#fef3c7;color:#92400e}
+  @media (prefers-color-scheme: dark){.tag.live{background:#14532d;color:#bbf7d0}.tag.soon{background:#451a03;color:#fde68a}}
+  ol.steps{margin:12px 0 0;padding:0;list-style:none;counter-reset:s}
+  ol.steps li{counter-increment:s;display:flex;gap:12px;padding:10px 0;border-top:1px solid var(--line);font-size:15px}
+  ol.steps li:first-child{border-top:0}
+  ol.steps li::before{content:counter(s);flex:none;width:28px;height:28px;border-radius:50%;background:var(--surface-2);display:grid;place-items:center;font-size:13px;font-weight:700;font-family:"IBM Plex Mono",monospace;margin-top:1px}
+  ol.steps b{font-weight:600}
+  code{font-family:"IBM Plex Mono",monospace;background:var(--surface-2);padding:2px 6px;border-radius:6px;font-size:.92em}
+  /* proof */
+  .proof{background:#17201c;color:#eef4f0;border-radius:24px;padding:26px;position:relative;overflow:hidden}
+  @media (prefers-color-scheme: dark){.proof{background:#0d1512;border:1px solid var(--line)}}
+  .proof .eyebrow{color:#7dd3c8}
+  .proof h2{color:#fff}
+  .proof-grid{display:grid;grid-template-columns:220px 1fr;gap:22px;margin-top:18px}
+  .stat{border-left:1px solid rgba(255,255,255,.18);padding-left:16px}
+  .stat+.stat{margin-top:18px}
+  .stat b{display:block;font-family:"IBM Plex Mono",monospace;font-size:22px;line-height:1}
+  .stat span{font-size:13px;opacity:.75}
+  blockquote{margin:0;font-family:"Newsreader",Georgia,serif;font-size:clamp(20px,2.6vw,26px);line-height:1.35;font-style:italic}
+  blockquote footer{font-family:"IBM Plex Sans",sans-serif;font-style:normal;font-size:13.5px;opacity:.75;margin-top:14px}
+  .checkline{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}
+  .checkline span{font-size:13px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);padding:7px 10px;border-radius:999px}
+  /* details table */
+  .kv{display:grid;grid-template-columns:1fr auto;gap:0}
+  .kv-row{display:contents}
+  .kv dt,.kv dd{padding:13px 0;border-top:1px solid var(--line);margin:0;font-size:15px}
+  .kv dt:first-of-type,.kv dd:first-of-type{border-top:0}
+  .kv dt{color:var(--muted)}
+  .kv dd{font-family:"IBM Plex Mono",monospace;font-weight:600;text-align:right;display:flex;align-items:center;gap:8px;justify-content:flex-end}
+  .copy-mini{min-height:36px;min-width:36px;border:1px solid var(--line);background:var(--surface);border-radius:8px;cursor:pointer;font-size:13px;padding:6px 10px;color:var(--ink)}
+  /* remaining */
+  .todo{list-style:none;margin:0;padding:0}
+  .todo li{display:flex;gap:14px;padding:16px 0;border-top:1px solid var(--line)}
+  .todo li:first-child{border-top:0;padding-top:4px}
+  .box{flex:none;width:26px;height:26px;border-radius:7px;border:2px solid var(--teal);margin-top:2px;position:relative}
+  .box.done{background:var(--teal);border-color:var(--teal)}
+  .box.done::after{content:"✓";color:#fff;position:absolute;inset:0;display:grid;place-items:center;font-size:15px;font-weight:700}
+  @media (prefers-color-scheme: dark){.box.done::after{color:#0b1513}}
+  .todo strong{display:block;font-size:15.5px}
+  .todo p{margin:3px 0 0;color:var(--muted);font-size:14px}
+  .note{background:var(--surface-2);border-radius:12px;padding:14px 16px;font-size:14px;color:var(--muted);margin-top:16px}
+  .note strong{color:var(--ink)}
+  footer.page{margin-top:32px;padding-top:18px;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;color:var(--muted);font-size:13px}
+  @media (max-width:760px){
+    .pipeline{grid-template-columns:1fr 1fr}
+    .grid2,.proof-grid{grid-template-columns:1fr}
+    .hero{padding:22px 18px}
+    .number{white-space:normal;word-break:break-all}
+  }
+  @media (max-width:420px){.pipeline{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <span class="badge"><span class="dot"></span> System live — recorder, transcription &amp; email</span>
+    <span class="badge"><span class="dot rec"></span> Private dashboard</span>
+    <span class="date">Snapshot · Wed, Nov 25, 2026</span>
+  </div>
+
+  <!-- HERO -->
+  <section class="hero" aria-labelledby="h1">
+    <p class="eyebrow">Your call recorder · Telnyx · One number only</p>
+    <h1 id="h1">Every important call, recorded and written down for you.</h1>
+    <p class="lede">Add this number to a call and it answers <strong>silently</strong>, records both sides, transcribes itself, and emails you the transcript. No app to babysit. No merging gymnastics once the softphone is signed in.</p>
+
+    <div class="number-row">
+      <div class="number-card">
+        <div class="number-label">Recorder number — keep this one</div>
+        <div class="number">778-752-9955</div>
+        <div class="number-sub">The only number on your Telnyx account. The old 236 number has been released. When people see a call from your softphone, this is the number they’ll see.</div>
+        <div class="wave" aria-hidden="true">
+          <span style="height:14px;animation-delay:0s"></span><span style="height:28px;animation-delay:.08s"></span><span style="height:36px;animation-delay:.16s"></span><span style="height:20px;animation-delay:.24s"></span><span style="height:32px;animation-delay:.32s"></span><span style="height:16px;animation-delay:.4s"></span><span style="height:30px;animation-delay:.48s"></span><span style="height:22px;animation-delay:.56s"></span><span style="height:34px;animation-delay:.64s"></span><span style="height:18px;animation-delay:.72s"></span><span style="height:26px;animation-delay:.8s"></span><span style="height:12px;animation-delay:.88s"></span><span style="height:30px;animation-delay:.96s"></span><span style="height:20px;animation-delay:1.04s"></span>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn primary" data-copy="7787529955">Copy recorder number <small>778…</small></button>
+        <button class="btn" data-copy="jasbangar@muse.ai">Copy transcript inbox <small>muse.ai</small></button>
+        <button class="btn" data-copy="sip.telnyx.com">Copy softphone server <small>sip.telnyx.com</small></button>
+        <div class="copied" id="copied" role="status" aria-live="polite"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PIPELINE -->
+  <section class="section" aria-labelledby="how">
+    <div class="section-head"><h2 id="how">How it works</h2><p>Hands-off, every 30 minutes</p></div>
+    <div class="pipeline">
+      <div class="step"><div class="step-num">1</div><h3>You call</h3><p>Place a call as usual, then bring the recorder in — or dial straight from the softphone so recording is on from the first second.</p></div>
+      <div class="step"><div class="step-num">2</div><h3>It records</h3><p>The 778 number answers silently and captures both voices, clean. Nothing to press once it’s joined.</p><span class="meta">Both sides · Silent join</span></div>
+      <div class="step"><div class="step-num">3</div><h3>It transcribes</h3><p>A checker runs every 30 minutes: downloads new recordings, rejects silent files, and transcribes the rest.</p><span class="meta">Engine · DeepInfra</span></div>
+      <div class="step"><div class="step-num">4</div><h3>You get email</h3><p>The finished transcript is emailed automatically. You just read it when you’re ready.</p><span class="meta">jasbangar@muse.ai</span></div>
+    </div>
+  </section>
+
+  <!-- PROOF -->
+  <section class="section">
+    <div class="proof">
+      <p class="eyebrow">Proven live — not just built</p>
+      <h2>The Fo test call</h2>
+      <div class="proof-grid">
+        <div>
+          <div class="stat"><b>49 sec</b><span>Test call duration</span></div>
+          <div class="stat"><b>2 voices</b><span>Both sides heard clearly</span></div>
+          <div class="stat"><b>Delivered</b><span>Transcript landed in Muse inbox</span></div>
+        </div>
+        <div>
+          <blockquote>
+            “Okay, I hear you. This is Fo speaking clearly for your test. Your voice is coming through just fine, and I’m glad to help with the recording. I hope this gives you what you need to confirm everything’s working.”
+            <footer>— Fo, on the recorded test call · +1 415-312-5395</footer>
+          </blockquote>
+          <div class="checkline">
+            <span>✓ Call placed from 778</span><span>✓ Recording saved</span><span>✓ Sound check passed</span><span>✓ Transcribed</span><span>✓ Emailed automatically</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TWO WAYS -->
+  <section class="section" aria-labelledby="ways">
+    <div class="section-head"><h2 id="ways">Two ways to record</h2><p>Use whichever fits the day</p></div>
+    <div class="grid2">
+      <article class="card">
+        <span class="tag soon">Set up — your merge test is still to do</span>
+        <h3>1 &nbsp; Three-way merge — on your TELUS phone</h3>
+        <p>Best for calls <em>you</em> place. The recorder is configured for this route, but your own merge test hasn’t been done yet — it’s a bonus check, since the system already proved itself without it, so there’s no rush on a bad-focus day.</p>
+        <ol class="steps">
+          <li><span><b>Call the person</b> as a normal call and wait for them to answer.</span></li>
+          <li><span>Tap <b>Add Call</b>, dial <b>778-752-9955</b>.</span></li>
+          <li><span>Tap <b>Merge</b>. The recorder has now joined silently.</span></li>
+          <li><span><b>Talk for 30 seconds or more</b> so both voices are captured, then hang up as usual.</span></li>
+        </ol>
+        <div class="note"><strong>Good test partner:</strong> Fo at <code>+1 415-312-5395</code> — a real voice on the other end, no clinic bothered.</div>
+      </article>
+
+      <article class="card">
+        <span class="tag soon">Better shape — one step left</span>
+        <h3>2 &nbsp; Softphone — dial straight through Telnyx</h3>
+        <p>No Add Call, no Merge. The call lives on Telnyx from the first second, so recording is simply on. It also sets up the inbound fix as a planned phase two: your cell forwards to 778 and Telnyx rings the app instead of your cell number — that’s what avoids the loop. That inbound bridge isn’t built yet.</p>
+        <ol class="steps">
+          <li><span>Install the free <b>Linphone</b> app (Zoiper also works).</span></li>
+          <li><span>In the Telnyx portal, open <b>SIP Trunking → jas-softphone</b> and set <b>your own password</b>. The temporary one was random on purpose — your real password never passes through anyone else.</span></li>
+          <li><span>On that same screen, turn <b>Recording on for all calls</b> if you see the setting.</span></li>
+          <li><span>Sign in to Linphone with the details in the card below.</span></li>
+        </ol>
+        <div class="note"><strong>Honest trade-offs:</strong> calls ride your Wi-Fi / data, callers see 778-752-9955 instead of your 604 number, and the app has to be running to ring. Keep your TELUS line in mind for 911 — on a plan-less phone dispatch can’t call you back if the call drops.</div>
+      </article>
+    </div>
+  </section>
+
+  <!-- DETAILS + STATUS -->
+  <section class="section">
+    <div class="grid2">
+      <article class="card" aria-labelledby="sip">
+        <h3 id="sip">Softphone sign-in</h3>
+        <p>Everything Linphone asks for, in one place. Tap copy on any line.</p>
+        <dl class="kv">
+          <div class="kv-row"><dt>Username</dt><dd>jassoftphone <button class="copy-mini" data-copy="jassoftphone">Copy</button></dd></div>
+          <div class="kv-row"><dt>Server</dt><dd>sip.telnyx.com <button class="copy-mini" data-copy="sip.telnyx.com">Copy</button></dd></div>
+          <div class="kv-row"><dt>Connection name</dt><dd>jas-softphone</dd></div>
+          <div class="kv-row"><dt>Caller ID shown</dt><dd>778-752-9955</dd></div>
+          <div class="kv-row"><dt>Password</dt><dd style="font-family:inherit;font-weight:400">You set it in the portal</dd></div>
+          <div class="kv-row"><dt>App</dt><dd style="font-family:inherit;font-weight:400">Linphone (free)</dd></div>
+        </dl>
+      </article>
+
+      <article class="card" aria-labelledby="left">
+        <h3 id="left">Where things stand</h3>
+        <ul class="todo">
+          <li><span class="box done"></span><div><strong>Recorder live on one number</strong><p>778-752-9955 only. The 236 number is released and its monthly charge stops.</p></div></li>
+          <li><span class="box done"></span><div><strong>Automatic transcription proven end-to-end</strong><p>Recording → sound check → DeepInfra transcript → email delivered to jasbangar@muse.ai.</p></div></li>
+          <li><span class="box done"></span><div><strong>First outbound call placed &amp; recorded</strong><p>Prepared message spoken, Fo’s reply captured and transcribed.</p></div></li>
+          <li><span class="box"></span><div><strong>Your three-way test — when you’re ready</strong><p>Call Fo, Add Call 778-752-9955, Merge, talk 30 seconds. Optional bonus check.</p></div></li>
+          <li><span class="box"></span><div><strong>Softphone password — your hands only</strong><p>Set it in the Telnyx portal, then sign in to Linphone. That’s the last setup step.</p></div></li>
+        </ul>
+        <div class="note"><strong>Account snapshot (Nov 25):</strong> 1 number held · balance $2.41 at last report · checks run every 30 min. A live back-and-forth conversation — listening and responding in the moment — is a future project; what you have today is prepared-message calls with recorded, transcribed replies.</div>
+      </article>
+    </div>
+  </section>
+
+  <footer class="page">
+    <span>Built Nov 25, 2026 · Recorder files &amp; plain-words write-up saved with the system</span>
+    <span>Rest your jaw — everything here stays built.</span>
+  </footer>
+</div>
+
+<script>
+(function(){
+  var out = document.getElementById('copied');
+  function show(msg){ if(out){ out.textContent = msg; setTimeout(function(){ if(out.textContent===msg) out.textContent=''; }, 2600); } }
+  document.querySelectorAll('[data-copy]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var val = btn.getAttribute('data-copy');
+      function done(){ show('Copied: ' + val); }
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(val).then(done).catch(function(){ fallback(); });
+      } else { fallback(); }
+      function fallback(){
+        var ta=document.createElement('textarea'); ta.value=val; ta.style.position='fixed'; ta.style.opacity='0';
+        document.body.appendChild(ta); ta.select();
+        try{ document.execCommand('copy'); done(); }catch(e){ show(val); }
+        document.body.removeChild(ta);
+      }
+    });
+  });
+})();
+</script>
+</body>
+</html>
