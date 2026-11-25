@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Record action="https://raw.githubusercontent.com/jasincanada/miner/telnyx-recorder/telnyx-recorder.xml" method="GET" playBeep="false" maxLength="3600" timeout="0" channels="single" format="mp3"/>
+</Response>
