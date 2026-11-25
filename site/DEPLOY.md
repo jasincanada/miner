@@ -51,10 +51,13 @@ and design: same information, same sections, rebuilt as Vue components.
   Christmas tree glows; gingerbread
   cookies and a glass of milk sit nearby; a coffee table holds a
   Bible; Jas rests on the couch under a big blanket with his favorite
-  woman beside him, watching Christmas shows. Through the windows,
+  woman beside him, watching Christmas shows. Gifts are tucked
+  under the tree, and a fireplace crackles, casting a warm flicker
+  across the room. Through the windows,
   sliding doors, and balcony: snowy evergreens (pines and firs) and
-  children tobogganing down a hill. The feeling to hit: warm, happy,
-  family — Christmas magic. The scene stays ambient and behind the
+  children tobogganing down a hill. The feeling to hit: warm
+  colours, a nostalgic feeling — warm, happy, family — Christmas
+  magic. The scene stays ambient and behind the
   content; the dashboard remains the main element.
 
 ## Why this exists (his words, Nov 25, 2026)
@@ -195,3 +198,83 @@ Considered and NOT adopted (Cosmo's call, Nov 25):
   above plus an FPS-probe auto quality tier.
 - Dropping the in-app Living / Calm / Still toggle. Kept: the toggle
   is Jas's own control, separate from the OS reduced-motion setting.
+
+## Feature set — ACR-shaped (his direction, Nov 25, 2026)
+
+Jas uses **ACR call recorder on Android** and likes it. This app is
+a **fully featured call recorder in ACR's shape**, not a bare list
+of files:
+
+- **Auto-record**: everything records by default. No per-call
+  action, no remembering to press anything.
+- **Excluded callers**: a per-number exclusion list — calls from
+  those numbers are never recorded.
+- **Exclude unknown numbers**: a separate checkbox, exactly as in
+  ACR — when it is on, calls from unknown numbers (no caller ID /
+  not a known contact) are not recorded.
+- Enforcement point: the recorder's TeXML is served **dynamically
+  by our own back end** (the TeXML app's URL points at our API), so
+  the exclusion list and the unknown-number rule are checked per
+  call, before recording starts — an excluded call is bridged
+  without the `<Record>` verb, never recorded-then-deleted.
+- **Library** (roadmap item 2, in ACR's shape): star / mark
+  important, a note on each recording, full-text transcript search,
+  export or share the recording file (this is the accountability
+  and legal use), rename, delete.
+
+## Architecture (researched Nov 25, 2026 — build it this way)
+
+- **Back end**: Fastify 5 with the Zod type-provider. **Drizzle**
+  ORM/Kit over `pg`. **Postgres, major version pinned** (never
+  tag-bump: Postgres 18 changed the volume path). Front end:
+  create-vue scaffold (Vue 3 `<script setup>`, Pinia, Vue Router,
+  Vitest).
+- **Login**: app-native session login — argon2id password hash,
+  opaque session row in Postgres, HttpOnly + Secure +
+  SameSite=Lax cookie, session rotated at login, login rate
+  limited. (nginx basic auth rejected: worst phone UX. Authelia is
+  the later add-on if passkey/MFA is ever wanted.) Only the web
+  (nginx) service is published; api and db live on the internal
+  Docker network only. `/api/webhooks/*` and `/api/texml/*` are
+  exempt from user auth — the Telnyx signature is their auth.
+- **Recordings — mirror immediately**: Telnyx recording download
+  URLs live only **~10 minutes** (Telnyx retains recordings 1
+  year). On the recording webhook: verify the Ed25519 signature
+  (headers `telnyx-signature-ed25519` + `telnyx-timestamp`, raw
+  body, ±300 s tolerance; test the Node SDK's `unwrap()` against a
+  captured real payload — a manual Ed25519 check over
+  `${timestamp}|${rawBody}` is the fallback), insert idempotently
+  (unique `telnyx_recording_id`), then a background job downloads
+  the mp3 to a local volume, stores sha256 + size in Postgres,
+  fetches the transcript, and fires an SSE event. A nightly
+  `GET /v2/recordings` reconciliation catches anything missed.
+- **Playback**: stream the mirrored local file through the
+  session-checked API with full HTTP Range support (206 +
+  Content-Range; Safari probes `bytes=0-1` and refuses without
+  206). Never redirect the browser to Telnyx presigned URLs.
+- **Live updates**: Server-Sent Events (nginx location with
+  `proxy_buffering off`, keepalive comments every 15–25 s), 30 s
+  polling as fallback. Keep the SSE location separate from any
+  WebSocket location (different `Connection` handling).
+- **In-page phone (WebRTC)**: JWT auth — a per-user Telephony
+  Credential on the SIP Credential Connection, token from
+  `POST /v2/telephony_credentials/{id}/token` (24 h, handle
+  TOKEN_EXPIRING_SOON). HTTPS is mandatory; media flows
+  browser↔Telnyx directly, never through our proxy.
+- **⚠️ SPIKE BEFORE BUILDING THE DIALER**: recording a WebRTC /
+  credential-connection call server-side is **not automatic** and
+  was **not verified end-to-end** by the research. First spike:
+  prove `record_start` via Call Control (or the TeXML `<Record>`
+  route) on a real browser call against Jas's actual account.
+  Only then build dialer UI.
+- **Outbound one-tap calls**: `POST /v2/texml/Accounts/{account_sid}/Calls`
+  (To / From in E.164 / ApplicationSid) — already proven live on
+  this account on Nov 25 (the Fo test call).
+- **Docker**: compose services — web (nginx serving the built SPA
+  + proxying), api, a one-shot migrate service (Drizzle migrations;
+  api starts only after db is healthy AND migrate completed —
+  never initdb scripts), db (healthcheck, **no published port**).
+  Backups: nightly `pg_dump -Fc` + a copy of the recordings
+  volume, stored off-box, with a tested restore; `.env` backed up
+  separately. SPA `try_files` must never swallow `/api/*`.
+  Cloudflare TLS mode: Full (Strict).
