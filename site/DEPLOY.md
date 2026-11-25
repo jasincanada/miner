@@ -316,3 +316,106 @@ Considered and NOT adopted (Cosmo's call, Nov 25):
   to the very next call.
 - Skipping HTTP Range support in v1 — browsers (Safari especially)
   refuse or cripple playback without it.
+
+## AI layer — integrated (his idea, approved Nov 25, 2026)
+
+Jas's direction: "the platform could have AI directly integrated
+into it" — approved as shaped below ("Yes", Nov 25).
+
+- **Transcripts in the app**: the mirror job already fetches each
+  transcript; show it beside the recording in the library (roadmap
+  item 2) — Whisper (openai/whisper-large-v3) via Jas's DeepInfra
+  keys. Proven Nov 25 on the live pipeline (~US$0.0002 per call).
+- **Per-call summary**: after transcription, an LLM pass (DeepInfra)
+  writes a short summary of the call and extracts, as structured
+  fields: promises/commitments the other party made, names,
+  dates/times mentioned, and follow-ups owed (by either side).
+  Shown on the recording's page, under the transcript. These
+  extracts feed Jas's briefings.
+- **Ask your library**: a question box over all transcripts; answers
+  must cite the call and the timestamp they came from, and link to
+  that moment. Semantic search over Postgres (pgvector) is the
+  implementation route (Postgres rule). Full-text search (roadmap
+  item 2) ships first; cited Q&A builds on it.
+- **Markers first**: in-call markers (see ACR additions below) are
+  passed to the summary pass as priority points.
+- **Shape**: AI work runs in a separate async worker (queue) —
+  never in the call path; a call can never fail or wait because AI
+  was busy. Keys: Jas's DeepInfra keys; spend carefully and log the
+  estimated cost per job (his standing grant).
+- **Evidence rule (hard)**: the recording is the evidence. AI output
+  is labelled notes — summaries and extracts are leads for Jas and
+  Cosmo to check, never verdicts. If AI text and audio disagree,
+  the audio wins, and the UI must never present AI text as fact.
+
+## Flagging unkind behaviour (his idea, Nov 25, 2026)
+
+Jas's direction: flag unkind behaviour in a call, shown visually
+as an indicator on the call record. This serves the platform's
+first purpose — accountability (see "Why this exists").
+
+- **His flag is the record**: Jas can flag a moment during a call
+  (the in-call mark control, flag variant) or afterwards on the
+  recording's page. A flag carries a timestamp, lands on the
+  transcript at that line, and can carry a short note in his words.
+- **Visual indicator**: flagged calls stand out in the library
+  list — a clear flag marker on the row, with the count when a
+  call has several flagged moments. Flagged state is also a
+  library filter ("show flagged calls").
+- **AI may suggest, never decide**: the summary pass may propose
+  candidate moments (possible unkind behaviour — e.g. raised
+  voice, dismissive, threatening) with timestamps. A suggestion is
+  visually distinct from his flag and does nothing until Jas
+  confirms it (it becomes his flag) or dismisses it (gone).
+  Unconfirmed suggestions never appear in briefings or exports as
+  findings.
+- **Briefings**: confirmed flags surface in his briefings, so a
+  flagged call is not lost in the list.
+
+## Nextcloud storage (his want, Nov 25, 2026)
+
+Jas's direction: recordings save directly to his own Nextcloud
+file storage.
+
+- On mirror completion, the recording mp3 AND its transcript are
+  also saved into a dedicated folder in his Nextcloud
+  (cloud.cryptocomputer.ca) — e.g. "Call Recordings", organised by
+  date. Nextcloud is the primary file store; the local volume
+  mirror stays (playback and backup design above unchanged).
+- Access: Nextcloud WebDAV with an **app password** created for
+  this app alone (revocable, never his main password) — the same
+  credential pattern as his Drive-backup project. The app password
+  lives in the api service's `.env` on the EPYC.
+- Timing: Cosmo stays out of Nextcloud admin/settings while
+  DeepSeek is working in it (Jas's standing instruction). Build the
+  WebDAV save behind a config flag, OFF until Jas says DeepSeek is
+  done and the app password exists; then enable. The nightly
+  off-box backup copy may target the same Nextcloud folder tree
+  once enabled.
+
+## ACR walkthrough additions (his screenshots, Nov 25, 2026)
+
+His full ACR (Cube ACR) settings inventory is in Cosmo's notes —
+ask Cosmo if needed. Additions beyond the Feature set section:
+
+- **In-call markers (shake-to-mark equivalent)**: a "mark this
+  moment" control during in-page calls drops a timestamped marker;
+  markers show on the recording's timeline and on the transcript
+  at the matching line, and can be edited after the call.
+  (Flagging, above, is the marker's accountability variant.)
+- **Silence check**: every mirrored recording gets an automated
+  silence/level check (the live pipeline already does this with
+  ffmpeg volumedetect). A recording that is silent or near-silent
+  is flagged in the library as "silent — no usable audio" instead
+  of posing as a good recording. (His ACR cannot do this: a
+  proven-silent 10-minute recording sat in its list looking
+  healthy at 2.4 MB.)
+- **Auto-star callers**: beside the exclusion list, an auto-star
+  list — contacts whose calls are automatically starred in the
+  library.
+- **Date-first titles**: recording titles start with the date
+  (his ACR setting), then the caller.
+- **Keep-everything, confirmed**: his own ACR is set to keep local
+  copies after backup, never auto-delete non-starred recordings,
+  and keep even 0-second calls — the retention default above
+  (keep forever) matches how he already runs his recorder.
