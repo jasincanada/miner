@@ -278,3 +278,41 @@ of files:
   volume, stored off-box, with a tested restore; `.env` backed up
   separately. SPA `try_files` must never swallow `/api/*`.
   Cloudflare TLS mode: Full (Strict).
+
+### Second-opinion review — platform (DeepSeek-R1 via DeepInfra, Nov 25)
+
+Adopted:
+- **The spike checklist** (for the WebRTC recording spike above):
+  prove (1) `record_start` via Call Control fires reliably during
+  an active WebRTC call; (2) BOTH audio streams are captured with
+  usable quality; (3) start/stop timing does not truncate the call;
+  (4) API errors (e.g. 429) are handled without breaking the call.
+- **Mirror hardening**: the download job retries with backoff
+  inside the 10-minute URL window and alerts on failure; the
+  nightly reconciliation stays from v1 (it is the safety net, not
+  an optional extra).
+- **WebRTC exclusion gap (a real catch)**: exclusion rules are
+  enforced in TeXML only for PSTN calls. Browser (WebRTC) calls
+  must check the same rules in the dialer path, before
+  `record_start` — one rule set, enforced in both paths.
+- **"Unknown number" defined**: caller ID withheld/absent, OR the
+  number is not in Jas's contacts/known numbers. The checkbox
+  covers both.
+- **Exclusion housekeeping**: adding a number to the exclusion list
+  offers, in the same step, to delete that number's existing
+  recordings. Exclusions are a convenience based on caller ID
+  (which can be spoofed) — never treat them as a security boundary.
+- **Retention**: a retention setting exists, default **keep
+  forever** — the record is the purpose of this app. Nothing is
+  ever auto-deleted silently.
+
+Considered and NOT adopted (Cosmo's call, Nov 25):
+- Replacing SSE with polling as the primary live-update path
+  (polling stays as the fallback; SSE's auto-reconnect with
+  Last-Event-ID covers restarts).
+- Deferring the nightly reconciliation (see mirror hardening).
+- Precomputing TeXML rules on a cron instead of serving them
+  dynamically per call — an exclusion made a minute ago must apply
+  to the very next call.
+- Skipping HTTP Range support in v1 — browsers (Safari especially)
+  refuse or cripple playback without it.
