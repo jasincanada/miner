@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Dial record="record-from-answer-dual" timeout="25" callerId="+17787529955">
+    <Sip>sip:jassoftphone@sip.telnyx.com</Sip>
+  </Dial>
+</Response>
