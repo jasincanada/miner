@@ -493,3 +493,27 @@ Guardrails, all required:
   is a human decision (Jas's word, or Cosmo's on his standing
   instruction) — auto-update only *delivers* what main already
   approved.
+
+## Build order — Slice 1 decided (Cosmo's call, at Jas's invitation, Nov 25, 2026)
+
+**Slice 1 — the walking skeleton.** The smallest real build that
+proves the whole machine end to end, with the dashboard as its
+payload:
+
+- The Vue 3 + TypeScript app carrying the current dashboard
+  content (the static page, rebuilt properly as an app).
+- The Fastify API with the login (session auth per Architecture)
+  and a health endpoint — nothing else yet.
+- Postgres + the one-shot migrate service; compose referencing
+  the published GHCR images, never a local build.
+- The GitHub Actions workflow publishing the alpha / beta / main
+  channel images, and the main-channel auto-updater with its
+  health check and rollback.
+
+**Done means**: Grokbot pulls Slice 1 onto the EPYC with the
+reduced job above; Jas opens callrecorder.cryptocomputer.ca, is
+stopped by the login, signs in, and sees the dashboard — and one
+dummy main-channel update delivers itself and passes its health
+check. Every later feature (recordings library, the in-page
+phone, the AI layer, flagging) plugs into this skeleton; none of
+them is in Slice 1.
