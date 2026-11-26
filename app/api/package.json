@@ -1,0 +1,33 @@
+{
+  "name": "call-recorder-api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "start": "node dist/index.js",
+    "migrate": "node dist/migrate.js",
+    "create-user": "node dist/scripts/create-user.js",
+    "db:generate": "drizzle-kit generate",
+    "db:check": "drizzle-kit check"
+  },
+  "dependencies": {
+    "@fastify/cookie": "^11.0.2",
+    "@fastify/rate-limit": "^10.3.0",
+    "@node-rs/argon2": "^2.0.2",
+    "drizzle-orm": "^0.44.7",
+    "fastify": "^5.6.2",
+    "fastify-type-provider-zod": "^4.0.2",
+    "pg": "^8.16.3",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/pg": "^8.15.6",
+    "drizzle-kit": "^0.31.7",
+    "tsx": "^4.20.6",
+    "typescript": "~5.7.3"
+  }
+}

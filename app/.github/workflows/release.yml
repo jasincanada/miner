@@ -1,0 +1,95 @@
+# Call Recorder — release pipeline (DEPLOY.md, "Release channels").
+#
+# Channels (one promotion path: alpha → beta → main; a build is
+# promoted, never rebuilt — the digest tested in alpha is the digest
+# that reaches main):
+#   * push to the development line (`develop`)  → tag `alpha`
+#   * version tag with a suffix (v1.2.0-beta.1) → tags `beta` + `1.2.0-beta.1`
+#   * version tag, stable (v1.2.0)              → tags `main` + `1.2.0`
+#
+# NOTE on placement: GitHub only runs workflows from the repository
+# root's .github/workflows. This tree is written as the app root —
+# when it is committed as a subfolder of a larger repo, move this
+# .github directory to that repo's root (the build contexts below
+# are relative to the app root and would need the subfolder prefix).
+
+name: release
+
+on:
+  push:
+    branches: [develop]
+    tags: ['v*.*.*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  REGISTRY: ghcr.io
+  WEB_IMAGE: ghcr.io/jasincanada/call-recorder-web
+  API_IMAGE: ghcr.io/jasincanada/call-recorder-api
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Decide channel and image tags
+        id: channel
+        shell: bash
+        run: |
+          if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
+            VERSION="${GITHUB_REF_NAME#v}"
+            if [[ "${VERSION}" == *-* ]]; then
+              CHANNEL="beta"
+            else
+              CHANNEL="main"
+            fi
+            TAGLIST="${CHANNEL},${VERSION}"
+          else
+            CHANNEL="alpha"
+            TAGLIST="alpha,alpha-${GITHUB_SHA::7}"
+          fi
+          {
+            echo "channel=${CHANNEL}"
+            echo "web_tags<<TAGS"
+            IFS=',' read -ra PARTS <<< "${TAGLIST}"
+            for t in "${PARTS[@]}"; do echo "${WEB_IMAGE}:${t}"; done
+            echo "TAGS"
+            echo "api_tags<<TAGS"
+            for t in "${PARTS[@]}"; do echo "${API_IMAGE}:${t}"; done
+            echo "TAGS"
+          } >> "${GITHUB_OUTPUT}"
+          echo "Channel: ${CHANNEL} — tags: ${TAGLIST}"
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push web image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./web
+          push: true
+          tags: ${{ steps.channel.outputs.web_tags }}
+
+      - name: Build and push api image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./api
+          push: true
+          tags: ${{ steps.channel.outputs.api_tags }}
+
+      - name: Summary
+        shell: bash
+        run: |
+          echo "### Released channel: ${{ steps.channel.outputs.channel }}" >> "${GITHUB_STEP_SUMMARY}"
+          echo 'Web tags:' >> "${GITHUB_STEP_SUMMARY}"
+          echo '${{ steps.channel.outputs.web_tags }}' >> "${GITHUB_STEP_SUMMARY}"
+          echo 'API tags:' >> "${GITHUB_STEP_SUMMARY}"
+          echo '${{ steps.channel.outputs.api_tags }}' >> "${GITHUB_STEP_SUMMARY}"

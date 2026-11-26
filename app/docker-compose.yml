@@ -1,0 +1,117 @@
+# Call Recorder — production stack for the EPYC (DEPLOY.md).
+#
+# Shape: only `web` is published (bound to localhost; the EPYC's front
+# nginx / Cloudflare is the public face and terminates HTTPS). `api`
+# and `db` live on the internal network only. `migrate` is a one-shot:
+# `api` starts only after db is healthy AND migrate has completed.
+# Images are pulled from GHCR — nothing is ever built on the EPYC
+# (Delivery model: build ahead, release, pull).
+#
+# Logging is capped on every service: /var/log on the EPYC was at
+# ~81% on Nov 25, 2026 — keep this stack's footprint small.
+
+name: call-recorder
+
+services:
+  db:
+    image: postgres:17-alpine # major version PINNED (DEPLOY.md: PG18 changed the volume path — never tag-bump Postgres casually)
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-callrecorder}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in .env}
+      POSTGRES_DB: ${POSTGRES_DB:-callrecorder}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-callrecorder} -d ${POSTGRES_DB:-callrecorder}"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+    # No published port — internal network only, by design.
+
+  migrate:
+    image: ghcr.io/jasincanada/call-recorder-api:${IMAGE_TAG:-main}
+    command: ["node", "dist/migrate.js"]
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-callrecorder}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-callrecorder}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+
+  api:
+    image: ghcr.io/jasincanada/call-recorder-api:${IMAGE_TAG:-main}
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgres://${POSTGRES_USER:-callrecorder}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-callrecorder}
+      PORT: "3000"
+      HOST: "0.0.0.0"
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      COOKIE_SECURE: ${COOKIE_SECURE:-true}
+      SESSION_TTL_DAYS: ${SESSION_TTL_DAYS:-30}
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/healthz').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 4s
+      retries: 6
+    labels:
+      # Auto-update scope: ONLY this app's web + api containers carry
+      # this label. db, migrate and the updater itself are never
+      # auto-updated (DEPLOY.md, Release channels guardrails).
+      com.centurylinklabs.watchtower.enable: "true"
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+
+  web:
+    image: ghcr.io/jasincanada/call-recorder-web:${IMAGE_TAG:-main}
+    restart: unless-stopped
+    ports:
+      # Published on localhost only — the EPYC's front nginx proxies
+      # callrecorder.cryptocomputer.ca to this port.
+      - "127.0.0.1:${WEB_PORT:-8080}:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    labels:
+      com.centurylinklabs.watchtower.enable: "true"
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+
+  updater:
+    # Main-channel auto-update (DEPLOY.md, Release channels): polls
+    # GHCR for new `main` images of the labelled containers, pulls and
+    # restarts them (rolling restart, old image kept for rollback via
+    # --cleanup=false semantics — see README "Auto-update" for the
+    # guardrails this covers and the ones still to close).
+    # If the GHCR packages are private, mount a read-only docker
+    # config with a pull token: uncomment the volume below after
+    # `docker login ghcr.io` on the EPYC.
+    image: containrrr/watchtower:1.7.1
+    restart: unless-stopped
+    command: --label-enable --interval 300 --rolling-restart
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      # - /root/.docker/config.json:/config.json:ro
+    environment:
+      DOCKER_CONFIG: /
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+
+volumes:
+  pgdata:
+    name: call-recorder-pgdata
