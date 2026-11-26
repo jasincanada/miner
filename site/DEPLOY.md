@@ -419,3 +419,39 @@ ask Cosmo if needed. Additions beyond the Feature set section:
   copies after backup, never auto-delete non-starred recordings,
   and keep even 0-second calls — the retention default above
   (keep forever) matches how he already runs his recorder.
+
+## Delivery model — build ahead, release, pull (his idea, Nov 25, 2026)
+
+Jas's direction: the coding is done ahead of time by Cosmo (via
+the GitHub API), packaged as a release, and Grokbot's job on the
+EPYC shrinks to telling the machine to pull it. This replaces
+"build everything on the EPYC from a spec" as the primary route —
+it spends far less of Grokbot's quota and none of the EPYC's
+build capacity.
+
+- **Code lives in this repo**: the whole application (Vue front
+  end, API, migrations, compose file, this runbook) is written
+  into the repo ahead of time by Cosmo. `site/DEPLOY.md` stays
+  the runbook; the code sits beside it.
+- **Releases are built by GitHub Actions**: on a version tag, a
+  workflow builds the front end and API and publishes container
+  images to GHCR (ghcr.io/jasincanada/call-recorder-web and
+  -api), pinned by version tag and digest. A GitHub Release marks
+  the version. Nothing is compiled on the EPYC.
+- **The EPYC only pulls**: `docker compose pull && docker compose
+  up -d` with images pinned — the compose file references the
+  published images, never a local build.
+- **Grokbot's reduced job**: SSH to the EPYC; fetch the compose
+  file and `.env` template from the release; create `.env` ON the
+  machine (secrets are generated/stored there only — never in
+  GitHub, never in a release); pull; up; add the nginx site in
+  Nginx UI (its own config — the part Nginx UI is actually for);
+  verify the login blocks and the page loads; report back per
+  "Report back to Jas" above.
+- **Updates** are the same motion: new release → pull → up.
+- **What still cannot be pre-built** (unchanged from above): the
+  WebRTC recording spike needs a live browser call against the
+  real account before the dialer ships, and the Nextcloud app
+  password is created in Jas's own Nextcloud settings after
+  DeepSeek finishes there. Both stay staged steps, flagged in the
+  release notes when they land.
