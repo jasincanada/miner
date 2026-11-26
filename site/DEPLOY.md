@@ -455,3 +455,41 @@ build capacity.
   password is created in Jas's own Nextcloud settings after
   DeepSeek finishes there. Both stay staged steps, flagged in the
   release notes when they land.
+
+### Release channels — main, beta, alpha (his direction, Nov 25, 2026)
+
+Three channels, one promotion path: **alpha → beta → main**. A
+build is *promoted*, never rebuilt, as it moves up — the exact
+image digest tested in alpha is the one that reaches main.
+
+- **alpha**: every merge to the development line. Tag `alpha`.
+  Bleeding edge, may break. Never auto-deployed anywhere.
+- **beta**: release candidates. Tags `beta` and the version
+  (e.g. `1.2.0-beta.1`). For trying a near-final build on a
+  machine he chooses. Manual pull only.
+- **main**: stable releases only. Tags `main` and the version
+  (e.g. `1.2.0`). This is the channel the EPYC runs.
+
+**Auto-update on main (his direction)**: the EPYC watches the
+`main` channel itself — a small updater (Watchtower, label-scoped
+to this app's containers only, or an equivalent timer) pulls a
+new `main` image when one appears and restarts the app with it.
+Guardrails, all required:
+
+- The updater touches ONLY this app's containers — never the
+  database image (Postgres stays pinned; database upgrades are a
+  deliberate, separate act).
+- Before swapping, it records the currently running digest as
+  last-known-good. After the update it health-checks the site
+  (the login page must answer). If the health check fails, it
+  rolls back to the last-known-good digest on its own and the
+  failure is reported to Jas (his Muse inbox) — a broken update
+  must never just sit there.
+- Migrations still run through the one-shot migrate service on
+  start (Architecture section) — an auto-update never skips them,
+  and a release whose migrations fail the health check rolls
+  back like any other failure.
+- Beta and alpha never auto-update anything. Promotion to main
+  is a human decision (Jas's word, or Cosmo's on his standing
+  instruction) — auto-update only *delivers* what main already
+  approved.
