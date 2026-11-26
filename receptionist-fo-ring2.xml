@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Dial record="record-from-answer-dual" timeout="20" callerId="+17787529955" action="https://raw.githubusercontent.com/jasincanada/miner/telnyx-recorder/receptionist-fo-bridge2.xml" method="GET">
+    <Sip>sip:jassoftphone@sip.telnyx.com</Sip>
+  </Dial>
+</Response>
